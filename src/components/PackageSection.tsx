@@ -99,7 +99,7 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
                     {/* Top meta tags */}
                     <div className="flex items-center justify-between gap-2 mb-3 mt-1">
                       <span className="px-2.5 py-1 rounded-full bg-[#faebe2] text-[#635e53] text-xs font-semibold">
-                        Min. {pkg.minPax} Orang
+                        Bisa dipilih per orang
                       </span>
                       {isPopular ? (
                         <span className="text-[#D98A45] text-xs font-bold flex items-center gap-1">

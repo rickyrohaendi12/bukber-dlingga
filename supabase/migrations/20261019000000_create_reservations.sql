@@ -55,8 +55,6 @@ declare
   requested_table text;
   requested_package text;
   package_price integer;
-  package_minimum integer;
-  max_package_minimum integer := 2;
   package_selection record;
   selected_package_count integer := 0;
   allocated_pax integer := 0;
@@ -101,24 +99,22 @@ begin
     from jsonb_each_text(coalesce(payload->'packageSelections', '{}'::jsonb))
   loop
     selected_package_count := selected_package_count + 1;
-    package_minimum := null;
     package_price := null;
 
     if package_selection.key = 'a-la-carte' then
       package_price := 0;
-      package_minimum := 2;
       has_a_la_carte := true;
     else
-      select price, min_pax into package_price, package_minimum
+      select price into package_price
       from (values
-        ('paket-hemat', 65000, 2),
-        ('paket-rame-rame', 115000, 4),
-        ('paket-premium-sultan', 185000, 4)
-      ) as packages(id, price, min_pax)
+        ('paket-hemat', 65000),
+        ('paket-rame-rame', 115000),
+        ('paket-premium-sultan', 185000)
+      ) as packages(id, price)
       where id = package_selection.key;
     end if;
 
-    if package_price is null or package_minimum is null
+    if package_price is null
       or package_selection.value::integer not between 1 and 30 then
       raise exception 'INVALID_PACKAGE_SELECTIONS';
     end if;
@@ -126,14 +122,10 @@ begin
     allocated_pax := allocated_pax + package_selection.value::integer;
     calculated_subtotal := coalesce(calculated_subtotal, 0)
       + package_price * package_selection.value::integer;
-    max_package_minimum := greatest(max_package_minimum, package_minimum);
   end loop;
 
   if selected_package_count = 0 or allocated_pax <> requested_pax then
     raise exception 'PACKAGE_SELECTIONS_MUST_MATCH_GUEST_COUNT';
-  end if;
-  if requested_pax < max_package_minimum then
-    raise exception 'PACKAGE_MINIMUM_NOT_MET';
   end if;
 
   select case when count(*) = 1 then min(key) else 'mixed' end

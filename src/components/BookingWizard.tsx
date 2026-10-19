@@ -60,16 +60,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   // Reservation Form State
   const [date, setDate] = useState(initialDate);
   const [timeSlot, setTimeSlot] = useState("");
-  const [pax, setPax] = useState<number>(
-    Math.max(2, packages.find((item) => item.id === initialPackageId)?.minPax ?? 2),
-  );
+  const [pax, setPax] = useState<number>(2);
   const [packageSelections, setPackageSelections] = useState<Record<string, number>>(
-    () => ({
-      [initialPackageId]: Math.max(
-        2,
-        packages.find((item) => item.id === initialPackageId)?.minPax ?? 2,
-      ),
-    }),
+    () => ({ [initialPackageId]: 2 }),
   );
   const [selectedTableId, setSelectedTableId] = useState<string>(() => {
     const recommendedCapacity = getSmallestSuitableTableCapacity(2, tables);
@@ -105,10 +98,6 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const selectedPackageItems = packages.filter(
     (item) => (packageSelections[item.id] ?? 0) > 0,
   );
-  const packageMinimum = Math.max(
-    2,
-    ...selectedPackageItems.map((item) => item.minPax ?? 2),
-  );
   const packageId =
     Object.keys(packageSelections).length === 1
       ? Object.keys(packageSelections)[0]
@@ -124,7 +113,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     tables[0];
 
   const handlePaxChange = (nextPax: number) => {
-    const adjustedPax = Math.min(12, Math.max(packageMinimum, assignedPax, nextPax));
+    const adjustedPax = Math.min(12, Math.max(2, assignedPax, nextPax));
     setPax(adjustedPax);
     const nextCapacity = getSmallestSuitableTableCapacity(adjustedPax, tables);
     const selectedTable = tables.find((table) => table.id === selectedTableId);
@@ -215,11 +204,6 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       );
       return;
     }
-    if (pax < packageMinimum) {
-      setFormError(`Paket yang dipilih memerlukan minimal ${packageMinimum} tamu dalam reservasi.`);
-      return;
-    }
-
     const provisionalBookingId = "Menunggu konfirmasi";
 
     const newReservation: ReservationData = {
@@ -419,7 +403,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     <button
                       type="button"
                       aria-label="Kurangi jumlah tamu"
-                      disabled={pax <= Math.max(packageMinimum, assignedPax, 2)}
+                      disabled={pax <= Math.max(assignedPax, 2)}
                       onClick={() => handlePaxChange(Math.max(2, pax - 1))}
                       className="px-2.5 py-1 bg-[#F8F5F0] hover:bg-[#e7dfd1] text-xs font-bold cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
                     >
@@ -581,7 +565,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       </span>
                       <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#E7DFD4] pt-3">
                         <span className="text-xs text-[#635e53]">
-                          Minimal {item.minPax ?? 2} tamu dalam reservasi
+                          Bisa dipilih mulai 1 orang
                         </span>
                         <div className="flex items-center gap-2">
                           <button
