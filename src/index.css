@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  --color-primary: #1a0f0b;
+  --color-primary-container: #30231f;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #9c8983;
+
+  --color-secondary: #635e53;
+  --color-secondary-container: #e7dfd1;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #686257;
+
+  --color-tertiary: #200c00;
+  --color-tertiary-container: #3e1e00;
+  --color-tertiary-fixed: #ffdcc3;
+  --color-tertiary-fixed-dim: #ffb77d;
+
+  --color-table-reserved: #D98A45;
+  --color-table-available: #71916B;
+  --color-table-occupied: #C56A64;
+  --color-border-subtle: #E7DFD4;
+
+  --color-surface: #F8F5F0;
+  --color-surface-dim: #e5d7cf;
+  --color-surface-bright: #fff8f5;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #fff1e8;
+  --color-surface-container: #faebe2;
+  --color-surface-container-high: #f4e6dc;
+  --color-surface-container-highest: #eee0d7;
+  --color-on-surface: #211a15;
+  --color-on-surface-variant: #4f4542;
+  --color-background: #FFFFFF;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-on-surface);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}

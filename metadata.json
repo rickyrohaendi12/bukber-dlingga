@@ -1,0 +1,6 @@
+{
+  "name": "Bukber Lounge - Reservasi Buka Puasa Bersama",
+  "description": "Aplikasi reservasi meja buka puasa bersama, denah meja interaktif, pemilihan paket iftar, dan e-tiket Ramadan 1446 H.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
