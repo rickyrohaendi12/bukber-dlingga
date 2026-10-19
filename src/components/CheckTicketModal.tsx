@@ -1,47 +1,48 @@
 import React, { useState } from 'react';
 import { ReservationData } from '../types/reservation';
 import { X, Search, Ticket, AlertCircle } from 'lucide-react';
+import { lookupReservation } from '../data/reservations';
 
 interface CheckTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
-  allReservations: ReservationData[];
   onSelectTicket: (ticket: ReservationData) => void;
 }
 
 export const CheckTicketModal: React.FC<CheckTicketModalProps> = ({
   isOpen,
   onClose,
-  allReservations,
   onSelectTicket,
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [bookingId, setBookingId] = useState('');
+  const [phone, setPhone] = useState('');
   const [searchError, setSearchError] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setSearchError('');
 
-    const clean = searchTerm.trim().replace(/^#/, '').toLowerCase();
-    if (!clean) {
-      setSearchError('Masukkan Booking ID atau nomor WhatsApp Anda.');
+    if (!bookingId.trim() || !phone.trim()) {
+      setSearchError('Masukkan Booking ID dan nomor WhatsApp yang digunakan saat memesan.');
       return;
     }
 
-    const found = allReservations.find(
-      (r) =>
-        r.bookingId.toLowerCase().includes(clean) ||
-        r.customerPhone.replace(/\D/g, '').includes(clean.replace(/\D/g, '')) ||
-        r.customerName.toLowerCase().includes(clean)
-    );
-
-    if (found) {
+    setIsSearching(true);
+    try {
+      const found = await lookupReservation(bookingId.trim().replace(/^#/, ''), phone.trim());
+      if (!found) {
+        setSearchError('Tiket tidak ditemukan. Pastikan Booking ID dan nomor WhatsApp sesuai.');
+        return;
+      }
       onSelectTicket(found);
       onClose();
-    } else {
-      setSearchError('Tiket tidak ditemukan. Coba periksa kembali Booking ID atau nomor WhatsApp.');
+    } catch (error) {
+      setSearchError(error instanceof Error ? error.message : 'Gagal mencari tiket. Coba lagi.');
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -65,22 +66,28 @@ export const CheckTicketModal: React.FC<CheckTicketModalProps> = ({
         {/* Content */}
         <div className="p-6 space-y-4">
           <p className="text-xs text-[#635e53]">
-            Masukkan <strong>Booking ID</strong> (contoh: <code>BKB-2025-0328-88</code>) atau{' '}
-            <strong>nomor WhatsApp</strong> yang digunakan saat pemesanan.
+            Untuk melindungi detail reservasi, masukkan Booking ID dan nomor WhatsApp yang digunakan saat pemesanan.
           </p>
 
           <form onSubmit={handleSearch} className="space-y-3">
             <div className="relative">
               <input
                 type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="BKB-2025-0328-88 atau 0812-xxxx"
+                value={bookingId}
+                onChange={(e) => setBookingId(e.target.value)}
+                placeholder="Booking ID"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] outline-none"
                 autoFocus
               />
               <Search className="w-4 h-4 text-[#635e53] absolute left-3.5 top-3.5" />
             </div>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Nomor WhatsApp (contoh: 0812...)"
+              className="w-full px-4 py-2.5 rounded-xl border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] outline-none"
+            />
 
             {searchError && (
               <div className="p-2.5 rounded-lg bg-[#ffdad6] text-[#ba1a1a] text-xs flex items-center gap-2">
@@ -91,9 +98,10 @@ export const CheckTicketModal: React.FC<CheckTicketModalProps> = ({
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-[#D98A45] hover:bg-[#C27734] text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
+              disabled={isSearching}
+              className="w-full py-2.5 rounded-xl bg-[#D98A45] hover:bg-[#C27734] disabled:opacity-60 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
             >
-              Cari E-Tiket Saya
+              {isSearching ? 'Mencari...' : 'Cari E-Tiket Saya'}
             </button>
           </form>
 

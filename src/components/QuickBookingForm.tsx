@@ -14,12 +14,15 @@ import {
 } from "lucide-react";
 import {
   getSmallestSuitableTableCapacity,
+  getTodayDate,
   isTableCapacitySuitable,
 } from "../data/reservations";
 
 interface QuickBookingFormProps {
   packages: MenuItem[];
   availableTables: TableItem[];
+  date: string;
+  onDateChange: (date: string) => void;
   preselectedTableId?: string;
   preselectedPackageId?: string;
   onSubmitReservation: (
@@ -39,6 +42,8 @@ interface QuickBookingFormProps {
 export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
   packages,
   availableTables,
+  date,
+  onDateChange,
   preselectedTableId,
   preselectedPackageId,
   onSubmitReservation,
@@ -46,7 +51,6 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
 }) => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [date, setDate] = useState("2025-03-28");
   const [timeSlot, setTimeSlot] = useState("17.30 - 19.30 WIB");
   const [packageId, setPackageId] = useState(
     preselectedPackageId || "paket-rame-rame",
@@ -160,7 +164,8 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                   <input
                     className="w-full px-3.5 py-2.5 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] bg-[#fff8f5] outline-none transition"
                     value={date}
-                    onChange={(e) => setDate(e.target.value)}
+                    min={getTodayDate()}
+                    onChange={(e) => onDateChange(e.target.value)}
                     required
                     type="date"
                   />

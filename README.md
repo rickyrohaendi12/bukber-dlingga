@@ -2,27 +2,67 @@
 <img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
 </div>
 
-# Run and deploy your AI Studio app
+# D'Lingga Coffee
 
-This contains everything you need to run your app locally.
+Reservasi tersimpan di Supabase dan dapat diakses lintas perangkat.
 
-View your app in AI Studio: https://ai.studio/apps/1308e7dd-60c3-4dc0-9be5-d856fe00fe2b
+## Menyiapkan Supabase
 
-## Run Locally
+1. Buat project di [Supabase](https://supabase.com/).
+2. Buka SQL Editor di dashboard, lalu jalankan isi file
+   [supabase/migrations/20261019000000_create_reservations.sql](./supabase/migrations/20261019000000_create_reservations.sql).
+3. Salin [.env.example](./.env.example) menjadi `.env.local`, lalu isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` dari **Project Settings → API**.
+4. Jangan pernah menaruh `service_role` key di frontend atau di environment variable berawalan `VITE_`.
 
-**Prerequisites:**  Node.js
+Migration membuat tabel reservasi, validasi dan perhitungan harga di database,
+pencegahan booking meja ganda secara atomik, RPC untuk booking/pencarian tiket/
+perubahan status, serta kebijakan akses Supabase. Daftar dan perubahan status
+reservasi hanya tersedia untuk akun Supabase yang memiliki role admin di
+`app_metadata`.
 
+Setelah migration dijalankan:
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Buat akun email/password admin melalui **Authentication → Users** di
+   dashboard Supabase. Jangan sediakan pendaftaran admin dari aplikasi.
+2. Beri role admin pada akun tersebut melalui SQL Editor (ganti alamat email):
+
+   ```sql
+   update auth.users
+   set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'::jsonb
+   where email = 'admin@example.com';
+   ```
+
+3. Nonaktifkan pendaftaran publik di **Authentication → Settings**. Setelah
+   mengubah role, keluar lalu masuk kembali agar token memuat role terbaru.
+
+## Menjalankan aplikasi
+
+```sh
+pnpm install
+pnpm dev
+```
+
+Untuk deploy, atur `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` sebagai
+environment variables pada hosting (termasuk preview dan production), lalu
+build ulang aplikasi.
 
 ## Panel Admin
 
-Buka `/admin-dlingga-9746` untuk melihat daftar reservasi, rincian paket dan add-on, serta menyetujui booking berstatus pending.
+Buka `/admin-dlingga-9746` untuk melihat daftar reservasi, rincian paket dan
+add-on, serta menyetujui booking berstatus pending. Panel dapat memuat ulang
+data langsung dari Supabase. Masuk dengan akun Supabase ber-role admin.
 
-Data reservasi aplikasi saat ini disimpan di `localStorage` browser. Aplikasi mengosongkan data booking dan status meja lama satu kali setelah pembaruan reset ini; booking baru tidak terhapus saat halaman dimuat ulang. Pengajuan dan approval mencegah pemakaian meja yang sama pada tanggal yang sama selama booking belum dibatalkan. Form juga membatasi pilihan ke kapasitas meja terkecil yang cukup untuk jumlah tamu (misalnya, 4 tamu hanya dapat memilih meja 4 kursi). Data hanya berlaku pada browser/perangkat yang sama dan belum tersinkron atau terkunci atomik antar perangkat/tab; untuk mencegah bentrok secara andal saat digunakan banyak pelanggan, gunakan backend dengan database dan validasi transaksi di server. Rute panel admin juga belum dilindungi autentikasi; gunakan backend dan autentikasi sebelum memakainya untuk operasional publik.
+Role `anon` tidak dapat membaca daftar reservasi atau mengubah status. Role
+tersebut hanya dapat membuat booking, melihat meja terisi berdasarkan tanggal,
+dan mencari tiket dengan pasangan Booking ID serta nomor WhatsApp. Kebijakan
+RLS dan fungsi database tetap memverifikasi role admin di server; menyembunyikan
+rute panel di frontend bukan satu-satunya lapisan perlindungan.
+
+Pencarian tiket pada antarmuka meminta kedua nilai tersebut. Booking dan harga
+divalidasi di database; nomor Booking ID dibuat oleh Supabase, dan pemesanan
+meja yang sama pada tanggal yang sama ditolak secara atomik selama statusnya
+pending atau confirmed. Data lama yang hanya tersimpan di `localStorage` tidak
+dimigrasikan otomatis; bila perlu, ekspor dan impor data lama sebelum
+menghapusnya.
 
 Saat formulir booking diajukan, aplikasi membuka WhatsApp ke nomor CS yang dikonfigurasi dengan detail reservasi terisi sebagai pesan. Pemesan tetap perlu menekan tombol Kirim di WhatsApp. Saat admin menyetujui booking, WhatsApp terbuka ke nomor pemesan dengan pesan persetujuan; admin perlu menekan Kirim agar pelanggan menerimanya. Pengiriman otomatis tanpa tindakan pengguna memerlukan integrasi WhatsApp Business API di backend.

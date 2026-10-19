@@ -3,6 +3,7 @@ import { TableItem, MenuItem, AddonItem, ReservationData } from '../types/reserv
 import { FloorPlan } from './FloorPlan';
 import {
   getSmallestSuitableTableCapacity,
+  getTodayDate,
   isTableCapacitySuitable,
 } from '../data/reservations';
 import {
@@ -29,8 +30,10 @@ interface BookingWizardProps {
   addons: AddonItem[];
   initialPackageId?: string;
   initialTableId?: string;
+  initialDate: string;
+  onDateChange: (date: string) => void;
   onBack: () => void;
-  onCompleteBooking: (reservation: ReservationData) => boolean;
+  onCompleteBooking: (reservation: ReservationData) => Promise<ReservationData | null>;
 }
 
 export const BookingWizard: React.FC<BookingWizardProps> = ({
@@ -39,6 +42,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   addons,
   initialPackageId = 'paket-rame-rame',
   initialTableId = 'M-01',
+  initialDate,
+  onDateChange,
   onBack,
   onCompleteBooking,
 }) => {
@@ -46,7 +51,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const [currentStep, setCurrentStep] = useState<number>(3);
 
   // Reservation Form State
-  const [date, setDate] = useState('2025-03-28');
+  const [date, setDate] = useState(initialDate);
   const [timeSlot, setTimeSlot] = useState('17.30 - 19.30 WIB');
   const [pax, setPax] = useState<number>(6);
   const [selectedPackageId, setSelectedPackageId] = useState<string>(initialPackageId);
@@ -138,7 +143,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim() || !customerPhone.trim()) {
       alert('Mohon isi nama lengkap dan nomor WhatsApp aktif Anda.');
@@ -155,11 +160,10 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       return;
     }
 
-    const randomSuffix = Math.floor(10 + Math.random() * 90);
-    const bookingId = `BKB-2025-0328-${randomSuffix}`;
+    const provisionalBookingId = 'Menunggu konfirmasi';
 
     const newReservation: ReservationData = {
-      bookingId,
+      bookingId: provisionalBookingId,
       customerName,
       customerPhone,
       date,
@@ -188,10 +192,13 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
         return addon ? `- ${addon.name} x${quantity}: ${formatPrice(addon.price * quantity)}` : null;
       })
       .filter((item): item is string => item !== null);
+    const savedReservation = await onCompleteBooking(newReservation);
+    if (!savedReservation) return;
+
     const message = [
       'Halo Admin Bukber Lounge, ada pengajuan booking baru yang perlu dikonfirmasi.',
       '',
-      `Booking ID: ${bookingId}`,
+      `Booking ID: ${savedReservation.bookingId}`,
       `Nama: ${customerName.trim()}`,
       `No. WhatsApp: ${customerPhone.trim()}`,
       `Tanggal: ${date}`,
@@ -210,9 +217,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     ].join('\n');
     const whatsappUrl = `https://wa.me/6282129211422?text=${encodeURIComponent(message)}`;
 
-    if (onCompleteBooking(newReservation)) {
-      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-    }
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -237,7 +242,10 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 STEP 1 • JADWAL
               </p>
               <p className="text-xs font-semibold text-[#1a0f0b] truncate">
-                28 Mar, 17:30 ({pax} Org)
+                {new Date(`${date}T00:00:00`).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                })}, 17:30 ({pax} Org)
               </p>
             </div>
           </div>
@@ -309,6 +317,19 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     Sesi iftar dibuka mulai pukul 16.30 WIB untuk kenyamanan persiapan doa
                   </p>
                 </div>
+                <label className="flex items-center gap-2 text-xs font-semibold text-[#1a0f0b]">
+                  Tanggal
+                  <input
+                    type="date"
+                    value={date}
+                    min={getTodayDate()}
+                    onChange={(event) => {
+                      setDate(event.target.value);
+                      onDateChange(event.target.value);
+                    }}
+                    className="rounded-lg border border-[#E7DFD4] bg-white px-2.5 py-2 text-xs"
+                  />
+                </label>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-[#1a0f0b]">Jumlah Tamu:</span>
                   <div className="flex items-center border border-[#E7DFD4] rounded-lg overflow-hidden">

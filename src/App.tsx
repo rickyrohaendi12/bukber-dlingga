@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   TableItem,
   MenuItem,
@@ -14,7 +14,6 @@ import {
   INITIAL_TABLES,
   MENU_PACKAGES,
   ADDON_ITEMS,
-  INITIAL_TICKETS,
 } from './data/mockData';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -30,8 +29,9 @@ import { Calendar, Armchair } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { AdminPage } from './components/AdminPage';
 import {
-  findTableBookingConflict,
-  ensureBookingDataReset,
+  getBookedTableIds,
+  createReservation,
+  getTodayDate,
   isTableCapacitySuitable,
 } from './data/reservations';
 
@@ -49,21 +49,20 @@ function PublicApp() {
   // Navigation / View State
   const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'ticket'>('landing');
 
-  // Master Data State with localStorage persistence
-  const [tables, setTables] = useState<TableItem[]>(() => {
-    ensureBookingDataReset();
-    const saved = localStorage.getItem('bukber_tables');
-    return saved ? JSON.parse(saved) : INITIAL_TABLES;
-  });
-
-  const [reservations, setReservations] = useState<ReservationData[]>(() => {
-    const saved = localStorage.getItem('bukber_reservations');
-    return saved ? JSON.parse(saved) : INITIAL_TICKETS;
-  });
-
-  const [activeReservation, setActiveReservation] = useState<ReservationData | null>(() => {
-    return reservations[0] ?? null;
-  });
+  const [bookingDate, setBookingDate] = useState(getTodayDate);
+  const [bookedTableIds, setBookedTableIds] = useState<string[]>([]);
+  const [activeReservation, setActiveReservation] = useState<ReservationData | null>(null);
+  const [backendError, setBackendError] = useState('');
+  const tables = useMemo(
+    () =>
+      INITIAL_TABLES.map((table) => ({
+        ...table,
+        status: bookedTableIds.includes(table.id)
+          ? 'reserved' as const
+          : 'available' as const,
+      })),
+    [bookedTableIds],
+  );
 
   // Preselection for wizard
   const [preselectedPackageId, setPreselectedPackageId] = useState<string>('paket-rame-rame');
@@ -72,14 +71,24 @@ function PublicApp() {
   // Check Ticket Modal
   const [isCheckTicketOpen, setIsCheckTicketOpen] = useState(false);
 
-  // Sync to local storage
   useEffect(() => {
-    localStorage.setItem('bukber_tables', JSON.stringify(tables));
-  }, [tables]);
-
-  useEffect(() => {
-    localStorage.setItem('bukber_reservations', JSON.stringify(reservations));
-  }, [reservations]);
+    let isCurrent = true;
+    getBookedTableIds(bookingDate)
+      .then((tableIds) => {
+        if (isCurrent) {
+          setBookedTableIds(tableIds);
+          setBackendError('');
+        }
+      })
+      .catch((error: unknown) => {
+        if (isCurrent) {
+          setBackendError(error instanceof Error ? error.message : 'Gagal memuat data reservasi.');
+        }
+      });
+    return () => {
+      isCurrent = false;
+    };
+  }, [bookingDate]);
 
   // Handlers
   const handleStartBooking = (packageId?: string, tableId?: string) => {
@@ -99,7 +108,7 @@ function PublicApp() {
     handleStartBooking(preselectedPackageId, table.id);
   };
 
-  const handleQuickSubmit = (
+  const handleQuickSubmit = async (
     data: Omit<
       ReservationData,
       'bookingId' | 'createdAt' | 'status' | 'subtotal' | 'taxAmount' | 'totalAmount'
@@ -113,51 +122,24 @@ function PublicApp() {
       return;
     }
 
-    const currentReservations: ReservationData[] = JSON.parse(
-      localStorage.getItem('bukber_reservations') ?? JSON.stringify(reservations),
-    );
-    const conflict = findTableBookingConflict(currentReservations, data.date, data.tableId);
-    if (conflict) {
-      window.alert(
-        `Meja ${data.tableId} pada tanggal ${data.date} sudah dipesan (${conflict.bookingId}). Silakan pilih meja atau tanggal lain.`,
-      );
-      return;
+    try {
+      const newReservation = await createReservation(data);
+      setBookedTableIds((current) => [...new Set([...current, newReservation.tableId])]);
+      setActiveReservation(newReservation);
+      setBackendError('');
+      setCurrentView('ticket');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Gagal membuat reservasi.';
+      window.alert(message.includes('TABLE_ALREADY_BOOKED')
+        ? `Meja ${data.tableId} pada tanggal ${data.date} sudah dipesan. Silakan pilih meja atau tanggal lain.`
+        : message);
     }
-
-    const pkg = MENU_PACKAGES.find((p) => p.id === data.packageId) || MENU_PACKAGES[1];
-    const subtotal = pkg.price * data.pax;
-    const taxAmount = Math.round(subtotal * 0.1);
-    const totalAmount = subtotal + taxAmount;
-    const randomSuffix = Math.floor(10 + Math.random() * 90);
-    const bookingId = `BKB-2025-0328-${randomSuffix}`;
-
-    const newReservation: ReservationData = {
-      ...data,
-      bookingId,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      subtotal,
-      taxAmount,
-      totalAmount,
-    };
-
-    localStorage.setItem(
-      'bukber_reservations',
-      JSON.stringify([newReservation, ...currentReservations]),
-    );
-
-    // Update table status
-    setTables((prev) =>
-      prev.map((t) => (t.id === data.tableId ? { ...t, status: 'reserved' } : t))
-    );
-
-    setReservations([newReservation, ...currentReservations]);
-    setActiveReservation(newReservation);
-    setCurrentView('ticket');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleCompleteBookingFromWizard = (newReservation: ReservationData): boolean => {
+  const handleCompleteBookingFromWizard = async (
+    newReservation: ReservationData,
+  ): Promise<ReservationData | null> => {
     const chosenTable = tables.find((table) => table.id === newReservation.tableId);
     if (
       !chosenTable ||
@@ -166,37 +148,24 @@ function PublicApp() {
       window.alert(
         `Pilih meja dengan kapasitas paling kecil yang cukup untuk ${newReservation.pax} orang agar meja yang lebih besar tetap tersedia bagi rombongan lain.`,
       );
-      return false;
+      return null;
     }
 
-    const currentReservations: ReservationData[] = JSON.parse(
-      localStorage.getItem('bukber_reservations') ?? JSON.stringify(reservations),
-    );
-    const conflict = findTableBookingConflict(
-      currentReservations,
-      newReservation.date,
-      newReservation.tableId,
-    );
-    if (conflict) {
-      window.alert(
-        `Meja ${newReservation.tableId} pada tanggal ${newReservation.date} sudah dipesan (${conflict.bookingId}). Silakan pilih meja atau tanggal lain.`,
-      );
-      return false;
+    try {
+      const savedReservation = await createReservation(newReservation);
+      setBookedTableIds((current) => [...new Set([...current, savedReservation.tableId])]);
+      setActiveReservation(savedReservation);
+      setBackendError('');
+      setCurrentView('ticket');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return savedReservation;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Gagal membuat reservasi.';
+      window.alert(message.includes('TABLE_ALREADY_BOOKED')
+        ? `Meja ${newReservation.tableId} pada tanggal ${newReservation.date} sudah dipesan. Silakan pilih meja atau tanggal lain.`
+        : message);
+      return null;
     }
-
-    const updatedReservations = [newReservation, ...currentReservations];
-    localStorage.setItem('bukber_reservations', JSON.stringify(updatedReservations));
-
-    // Update table status
-    setTables((prev) =>
-      prev.map((t) => (t.id === newReservation.tableId ? { ...t, status: 'reserved' } : t))
-    );
-
-    setReservations(updatedReservations);
-    setActiveReservation(newReservation);
-    setCurrentView('ticket');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return true;
   };
 
   const handleSelectTicketFromModal = (ticket: ReservationData) => {
@@ -207,6 +176,11 @@ function PublicApp() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      {backendError && (
+        <div role="alert" className="bg-[#FBEEEE] px-4 py-3 text-center text-sm text-[#A8544E]">
+          Backend reservasi belum siap: {backendError}
+        </div>
+      )}
       {/* Top Navigation */}
       <Header
         currentView={currentView}
@@ -328,6 +302,8 @@ function PublicApp() {
               <QuickBookingForm
                 packages={MENU_PACKAGES}
                 availableTables={tables}
+                date={bookingDate}
+                onDateChange={setBookingDate}
                 preselectedTableId={preselectedTableId}
                 preselectedPackageId={preselectedPackageId}
                 onSubmitReservation={handleQuickSubmit}
@@ -344,6 +320,8 @@ function PublicApp() {
             tables={tables}
             packages={MENU_PACKAGES}
             addons={ADDON_ITEMS}
+            initialDate={bookingDate}
+            onDateChange={setBookingDate}
             initialPackageId={preselectedPackageId}
             initialTableId={preselectedTableId}
             onBack={() => {
@@ -375,7 +353,6 @@ function PublicApp() {
       <CheckTicketModal
         isOpen={isCheckTicketOpen}
         onClose={() => setIsCheckTicketOpen(false)}
-        allReservations={reservations}
         onSelectTicket={handleSelectTicketFromModal}
       />
     </div>

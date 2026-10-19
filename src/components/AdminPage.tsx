@@ -6,6 +6,9 @@ import {
   CheckCircle2,
   Clock3,
   ClipboardList,
+  LockKeyhole,
+  LogIn,
+  LogOut,
   MapPin,
   MessageCircle,
   Phone,
@@ -15,25 +18,20 @@ import {
 } from "lucide-react";
 import {
   ADDON_ITEMS,
-  INITIAL_TICKETS,
   MENU_PACKAGES,
   INITIAL_TABLES,
 } from "../data/mockData";
 import { ReservationData } from "../types/reservation";
+import type { Session } from "@supabase/supabase-js";
 import dlinggaLogo from "../img/dlingga.jpg";
+import { isSupabaseConfigured, requireSupabase } from "../lib/supabase";
 import {
-  ensureBookingDataReset,
-  findTableBookingConflict,
+  getReservations,
   isTableCapacitySuitable,
+  updateReservationStatus,
 } from "../data/reservations";
 
 type BookingFilter = "all" | ReservationData["status"];
-
-const readReservations = (): ReservationData[] => {
-  ensureBookingDataReset();
-  const saved = localStorage.getItem("bukber_reservations");
-  return saved ? JSON.parse(saved) : INITIAL_TICKETS;
-};
 
 const formatDate = (date: string) => {
   const [year, month, day] = date.split("-").map(Number);
@@ -90,29 +88,128 @@ const getApprovalMessageUrl = (booking: ReservationData) => {
 };
 
 export const AdminPage: React.FC = () => {
-  const [reservations, setReservations] =
-    useState<ReservationData[]>(readReservations);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [reservations, setReservations] = useState<ReservationData[]>([]);
+  const [loadError, setLoadError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<BookingFilter>("all");
   const [search, setSearch] = useState("");
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
     null,
   );
+  const isAdmin = session?.user.app_metadata.role === "admin";
 
   useEffect(() => {
-    localStorage.setItem("bukber_reservations", JSON.stringify(reservations));
-  }, [reservations]);
+    if (!isSupabaseConfigured) {
+      setAuthError("Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY untuk mengaktifkan panel admin.");
+      setIsCheckingSession(false);
+      return;
+    }
 
-  useEffect(() => {
-    const syncReservations = (event: StorageEvent) => {
-      if (event.key === "bukber_reservations") {
-        setReservations(
-          event.newValue ? JSON.parse(event.newValue) : INITIAL_TICKETS,
-        );
-      }
+    let isCurrent = true;
+    const client = requireSupabase();
+    client.auth.getSession()
+      .then(({ data, error }) => {
+        if (!isCurrent) return;
+        if (error) setAuthError(error.message);
+        setSession(data.session);
+        setIsCheckingSession(false);
+      })
+      .catch((error: unknown) => {
+        if (isCurrent) {
+          setAuthError(error instanceof Error ? error.message : "Gagal memeriksa sesi admin.");
+          setIsCheckingSession(false);
+        }
+      });
+    const { data: { subscription } } = client.auth.onAuthStateChange((_event, nextSession) => {
+      if (isCurrent) setSession(nextSession);
+    });
+    return () => {
+      isCurrent = false;
+      subscription.unsubscribe();
     };
-    window.addEventListener("storage", syncReservations);
-    return () => window.removeEventListener("storage", syncReservations);
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin) {
+      setReservations([]);
+      setIsLoading(false);
+      return;
+    }
+
+    let isCurrent = true;
+    setIsLoading(true);
+    getReservations()
+      .then((items) => {
+        if (isCurrent) {
+          setReservations(items);
+          setLoadError("");
+        }
+      })
+      .catch((error: unknown) => {
+        if (isCurrent) {
+          setLoadError(error instanceof Error ? error.message : "Gagal memuat reservasi.");
+        }
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoading(false);
+      });
+    return () => {
+      isCurrent = false;
+    };
+  }, [isAdmin]);
+
+  const signIn = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsSigningIn(true);
+    setAuthError("");
+    try {
+      const { data, error } = await requireSupabase().auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) throw error;
+      if (data.user.app_metadata.role !== "admin") {
+        await requireSupabase().auth.signOut();
+        setAuthError("Akun ini belum memiliki role admin. Hubungi pengelola project Supabase.");
+        return;
+      }
+      setSession(data.session);
+      setPassword("");
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Gagal masuk ke panel admin.");
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      const { error } = await requireSupabase().auth.signOut();
+      if (error) throw error;
+      setSession(null);
+      setReservations([]);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Gagal keluar dari panel admin.");
+    }
+  };
+
+  const refreshReservations = async () => {
+    setIsLoading(true);
+    try {
+      setReservations(await getReservations());
+      setLoadError("");
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Gagal memuat reservasi.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const sortedReservations = useMemo(
     () =>
@@ -157,12 +254,8 @@ export const AdminPage: React.FC = () => {
     [reservations],
   );
 
-  const approveBooking = (bookingId: string) => {
-    const currentReservations: ReservationData[] = JSON.parse(
-      localStorage.getItem("bukber_reservations") ??
-        JSON.stringify(reservations),
-    );
-    const booking = currentReservations.find(
+  const approveBooking = async (bookingId: string) => {
+    const booking = reservations.find(
       (item) => item.bookingId === bookingId,
     );
     if (!booking || booking.status !== "pending") return;
@@ -178,20 +271,22 @@ export const AdminPage: React.FC = () => {
       return;
     }
 
-    const conflict = findTableBookingConflict(
-      currentReservations,
-      booking.date,
-      booking.tableId,
-      booking.bookingId,
-    );
-    if (conflict) {
-      window.alert(
-        `Booking tidak dapat disetujui: meja ${booking.tableId} pada tanggal ${booking.date} sudah dipesan oleh booking ${conflict.bookingId}. Batalkan salah satu booking terlebih dahulu.`,
+    let updatedBooking: ReservationData;
+    try {
+      updatedBooking = await updateReservationStatus(bookingId, "confirmed");
+      setReservations((current) =>
+        current.map((item) => item.bookingId === bookingId ? updatedBooking : item),
       );
+      setLoadError("");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Gagal menyetujui booking.";
+      window.alert(message.includes("TABLE_ALREADY_BOOKED")
+        ? `Meja ${booking.tableId} pada tanggal ${booking.date} sudah dipesan oleh booking lain.`
+        : message);
       return;
     }
 
-    const whatsappUrl = getApprovalMessageUrl(booking);
+    const whatsappUrl = getApprovalMessageUrl(updatedBooking);
     if (whatsappUrl) {
       window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     } else {
@@ -200,16 +295,6 @@ export const AdminPage: React.FC = () => {
       );
     }
 
-    const updatedReservations = currentReservations.map((item) =>
-      item.bookingId === bookingId
-        ? { ...item, status: "confirmed" as const }
-        : item,
-    );
-    localStorage.setItem(
-      "bukber_reservations",
-      JSON.stringify(updatedReservations),
-    );
-    setReservations(updatedReservations);
   };
 
   const selectedPackage = selectedBooking
@@ -218,6 +303,85 @@ export const AdminPage: React.FC = () => {
   const selectedTable = selectedBooking
     ? INITIAL_TABLES.find((table) => table.id === selectedBooking.tableId)
     : undefined;
+
+  if (isCheckingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F8F5F0] text-sm text-[#635e53]">
+        Memeriksa sesi admin...
+      </div>
+    );
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F8F5F0] p-4">
+        <div role="alert" className="max-w-lg rounded-2xl border border-[#F0D8D6] bg-white p-6 text-sm text-[#A8544E]">
+          {authError}
+        </div>
+      </div>
+    );
+  }
+
+  if (!session || !isAdmin) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F8F5F0] px-4 py-10">
+        <form onSubmit={signIn} className="w-full max-w-md rounded-2xl border border-[#E7DFD4] bg-white p-6 shadow-sm sm:p-8">
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[#faebe2] text-[#D98A45]">
+            <LockKeyhole className="h-6 w-6" />
+          </div>
+          <p className="text-xs font-bold uppercase tracking-wider text-[#D98A45]">Panel administrasi</p>
+          <h1 className="mt-1 font-display text-2xl font-extrabold text-[#1a0f0b]">Masuk admin</h1>
+          <p className="mt-2 text-sm leading-6 text-[#635e53]">
+            Gunakan akun Supabase dengan app_metadata role admin.
+          </p>
+          {!session && (
+            <>
+              <label className="mt-6 block text-xs font-semibold text-[#1a0f0b]">
+                Email
+                <input
+                  type="email"
+                  autoComplete="username"
+                  required
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="mt-1.5 w-full rounded-xl border border-[#E7DFD4] px-3.5 py-3 text-sm outline-none focus:border-[#D98A45]"
+                />
+              </label>
+              <label className="mt-4 block text-xs font-semibold text-[#1a0f0b]">
+                Password
+                <input
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="mt-1.5 w-full rounded-xl border border-[#E7DFD4] px-3.5 py-3 text-sm outline-none focus:border-[#D98A45]"
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={isSigningIn}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#30231f] px-4 py-3 text-sm font-bold text-white disabled:opacity-60"
+              >
+                <LogIn className="h-4 w-4" />
+                {isSigningIn ? "Memeriksa..." : "Masuk"}
+              </button>
+            </>
+          )}
+          {authError && (
+            <p role="alert" className="mt-4 rounded-xl bg-[#FBEEEE] p-3 text-sm text-[#A8544E]">
+              {authError}
+            </p>
+          )}
+          {session && !isAdmin && (
+            <button type="button" onClick={signOut} className="mt-5 rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53]">
+              Keluar dari akun ini
+            </button>
+          )}
+        </form>
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F5F0] text-[#211a15]">
@@ -244,12 +408,22 @@ export const AdminPage: React.FC = () => {
               </span>
             </span>
           </a>
-          <a
-            href="/"
-            className="rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#F8F5F0]"
-          >
-            Kembali ke website
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={signOut}
+              className="flex items-center gap-2 rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#F8F5F0]"
+            >
+              <LogOut className="h-4 w-4" />
+              Keluar
+            </button>
+            <a
+              href="/"
+              className="rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#F8F5F0]"
+            >
+              Kembali ke website
+            </a>
+          </div>
         </div>
       </header>
 
@@ -265,7 +439,19 @@ export const AdminPage: React.FC = () => {
             Tinjau pengajuan, cek pilihan menu setiap tamu, lalu setujui booking
             yang siap diproses.
           </p>
+          <button
+            type="button"
+            onClick={refreshReservations}
+            className="mt-4 rounded-xl border border-[#E7DFD4] bg-white px-4 py-2 text-sm font-semibold text-[#635e53] hover:bg-[#F8F5F0]"
+          >
+            {isLoading ? "Memuat..." : "Muat ulang"}
+          </button>
         </div>
+        {loadError && (
+          <div role="alert" className="mb-6 rounded-xl border border-[#F0D8D6] bg-[#FBEEEE] p-4 text-sm text-[#A8544E]">
+            Gagal memuat atau memperbarui data Supabase: {loadError}
+          </div>
+        )}
 
         <section
           className="mb-7 grid grid-cols-2 gap-3 lg:grid-cols-4"
@@ -376,7 +562,11 @@ export const AdminPage: React.FC = () => {
             </div>
 
             <div className="max-h-[720px] overflow-y-auto">
-              {filteredReservations.length === 0 ? (
+              {isLoading ? (
+                <div className="px-6 py-14 text-center text-sm text-[#635e53]">
+                  Memuat booking dari Supabase...
+                </div>
+              ) : filteredReservations.length === 0 ? (
                 <div className="px-6 py-14 text-center">
                   <ClipboardList className="mx-auto h-9 w-9 text-[#c4b8ad]" />
                   <p className="mt-3 font-semibold text-[#1a0f0b]">

@@ -1,4 +1,4 @@
-import { TableItem, MenuItem, AddonItem, ReservationData } from '../types/reservation';
+import { TableItem, MenuItem, AddonItem } from '../types/reservation';
 
 export const INITIAL_TABLES: TableItem[] = [
   // Zona Semi-Outdoor Garden
@@ -239,8 +239,6 @@ export const ADDON_ITEMS: AddonItem[] = [
     unit: 'porsi'
   }
 ];
-
-export const INITIAL_TICKETS: ReservationData[] = [];
 
 export const FAQS = [
   {
