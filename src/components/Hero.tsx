@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Calendar,
-  Utensils,
-  Star,
-  ShieldCheck,
-  Armchair,
-} from "lucide-react";
+import { Calendar, Utensils, Star, ShieldCheck, Armchair } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 
 interface HeroProps {
@@ -24,13 +18,22 @@ export const Hero: React.FC<HeroProps> = ({
       {/* Subtle Ambient Warm Glow */}
       <motion.div
         className="absolute -top-32 right-1/4 w-96 h-96 bg-[#ffdcc3]/30 rounded-full blur-3xl pointer-events-none"
-        animate={shouldReduceMotion ? undefined : { scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
+        animate={
+          shouldReduceMotion
+            ? undefined
+            : { scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }
+        }
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
         className="absolute bottom-0 left-10 w-72 h-72 bg-[#f4e6dc]/70 rounded-full blur-2xl pointer-events-none"
         animate={shouldReduceMotion ? undefined : { scale: [1, 1.06, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 1,
+        }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 md:py-20 relative z-10">
@@ -152,9 +155,15 @@ export const Hero: React.FC<HeroProps> = ({
           {/* Right Column: Visual Imagery Bento (5 cols) */}
           <motion.div
             className="lg:col-span-5 relative"
-            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.96, y: 16 }}
+            initial={
+              shouldReduceMotion ? false : { opacity: 0, scale: 0.96, y: 16 }
+            }
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut", delay: shouldReduceMotion ? 0 : 0.25 }}
+            transition={{
+              duration: 0.7,
+              ease: "easeOut",
+              delay: shouldReduceMotion ? 0 : 0.25,
+            }}
           >
             <div className="relative mx-auto max-w-md lg:max-w-none">
               {/* Main Hero Image Frame */}
@@ -169,7 +178,7 @@ export const Hero: React.FC<HeroProps> = ({
               </div>
 
               {/* Floating Pill Card: Fast Booking Notice */}
-              <motion.div
+              {/* <motion.div
                 className="absolute -bottom-6 -left-3 sm:left-4 bg-white/95 backdrop-blur-md border border-[#E7DFD4] rounded-xl p-3.5 shadow-lg flex items-center gap-3"
                 animate={shouldReduceMotion ? undefined : { y: [0, -6, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -185,13 +194,18 @@ export const Hero: React.FC<HeroProps> = ({
                     Amankan meja terbaik Anda sekarang
                   </p>
                 </div>
-              </motion.div>
+              </motion.div> */}
 
               {/* Floating Badge: Free Takjil */}
               <motion.div
                 className="absolute -top-4 -right-2 bg-[#30231f] text-white rounded-xl px-3.5 py-1.5 shadow-md border border-[#E7DFD4] flex items-center gap-2"
                 animate={shouldReduceMotion ? undefined : { y: [0, 5, 0] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                transition={{
+                  duration: 4.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5,
+                }}
               >
                 <ShieldCheck className="w-4 h-4 text-[#D98A45]" />
                 <span className="text-xs font-semibold text-white">
