@@ -49,6 +49,7 @@ export interface ReservationData {
   timeSlot: string;
   pax: number;
   packageId: string;
+  packageSelections: { [packageId: string]: number };
   tableId: string;
   notes?: string;
   addons: { [addonId: string]: number };

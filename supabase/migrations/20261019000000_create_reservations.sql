@@ -7,6 +7,7 @@ create table if not exists public.reservations (
   time_slot text not null,
   pax integer not null check (pax between 1 and 30),
   package_id text not null,
+  package_selections jsonb not null default '{}'::jsonb,
   table_id text not null,
   notes text not null default '',
   addons jsonb not null default '{}'::jsonb,
@@ -17,6 +18,14 @@ create table if not exists public.reservations (
   tax_amount integer not null check (tax_amount >= 0),
   total_amount integer not null check (total_amount >= 0)
 );
+
+alter table public.reservations
+  add column if not exists package_selections jsonb not null default '{}'::jsonb;
+
+update public.reservations
+set package_selections = jsonb_build_object(package_id, pax)
+where package_selections = '{}'::jsonb
+  and package_id in ('paket-hemat', 'paket-rame-rame', 'paket-premium-sultan', 'a-la-carte');
 
 create unique index if not exists reservations_active_table_date_key
   on public.reservations (date, table_id)
@@ -46,7 +55,12 @@ declare
   requested_table text;
   requested_package text;
   package_price integer;
-  minimum_pax integer;
+  package_minimum integer;
+  max_package_minimum integer := 2;
+  package_selection record;
+  selected_package_count integer := 0;
+  allocated_pax integer := 0;
+  has_a_la_carte boolean := false;
   table_seats integer;
   smallest_suitable_seats integer;
   addons_total integer := 0;
@@ -78,15 +92,55 @@ begin
     raise exception 'INVALID_GUEST_COUNT';
   end if;
 
-  select price, min_pax into package_price, minimum_pax
-  from (values
-    ('paket-hemat', 65000, 2),
-    ('paket-rame-rame', 115000, 4),
-    ('paket-premium-sultan', 185000, 4)
-  ) as packages(id, price, min_pax)
-  where id = requested_package;
-  if package_price is null or requested_pax < minimum_pax then
-    raise exception 'INVALID_PACKAGE';
+  if jsonb_typeof(coalesce(payload->'packageSelections', '{}'::jsonb)) <> 'object' then
+    raise exception 'INVALID_PACKAGE_SELECTIONS';
+  end if;
+
+  for package_selection in
+    select key, value
+    from jsonb_each_text(coalesce(payload->'packageSelections', '{}'::jsonb))
+  loop
+    selected_package_count := selected_package_count + 1;
+    package_minimum := null;
+    package_price := null;
+
+    if package_selection.key = 'a-la-carte' then
+      package_price := 0;
+      package_minimum := 2;
+      has_a_la_carte := true;
+    else
+      select price, min_pax into package_price, package_minimum
+      from (values
+        ('paket-hemat', 65000, 2),
+        ('paket-rame-rame', 115000, 4),
+        ('paket-premium-sultan', 185000, 4)
+      ) as packages(id, price, min_pax)
+      where id = package_selection.key;
+    end if;
+
+    if package_price is null or package_minimum is null
+      or package_selection.value::integer not between 1 and 30 then
+      raise exception 'INVALID_PACKAGE_SELECTIONS';
+    end if;
+
+    allocated_pax := allocated_pax + package_selection.value::integer;
+    calculated_subtotal := coalesce(calculated_subtotal, 0)
+      + package_price * package_selection.value::integer;
+    max_package_minimum := greatest(max_package_minimum, package_minimum);
+  end loop;
+
+  if selected_package_count = 0 or allocated_pax <> requested_pax then
+    raise exception 'PACKAGE_SELECTIONS_MUST_MATCH_GUEST_COUNT';
+  end if;
+  if requested_pax < max_package_minimum then
+    raise exception 'PACKAGE_MINIMUM_NOT_MET';
+  end if;
+
+  select case when count(*) = 1 then min(key) else 'mixed' end
+  into requested_package
+  from jsonb_each_text(coalesce(payload->'packageSelections', '{}'::jsonb));
+  if requested_package is null then
+    raise exception 'INVALID_PACKAGE_SELECTIONS';
   end if;
 
   select seats into table_seats
@@ -130,11 +184,15 @@ begin
     addons_total := addons_total + addon_price * addon_quantity;
   end loop;
 
-  calculated_subtotal := package_price * requested_pax + addons_total;
+  if has_a_la_carte and addons_total = 0 then
+    raise exception 'A_LA_CARTE_REQUIRES_MENU';
+  end if;
+
+  calculated_subtotal := coalesce(calculated_subtotal, 0) + addons_total;
 
   insert into public.reservations (
     booking_id, customer_name, customer_phone, date, time_slot, pax,
-    package_id, table_id, notes, addons, subtotal, tax_amount, total_amount
+    package_id, package_selections, table_id, notes, addons, subtotal, tax_amount, total_amount
   ) values (
     'BKB-' || to_char(current_date, 'YYYYMMDD') || '-' ||
       upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12)),
@@ -144,6 +202,7 @@ begin
     trim(payload->>'timeSlot'),
     requested_pax,
     requested_package,
+    coalesce(payload->'packageSelections', '{}'::jsonb),
     requested_table,
     trim(coalesce(payload->>'notes', '')),
     coalesce(payload->'addons', '{}'::jsonb),

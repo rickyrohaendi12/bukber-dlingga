@@ -34,7 +34,13 @@ export const TicketView: React.FC<TicketViewProps> = ({
   tables,
   onBackToHome,
 }) => {
-  const selectedPackage = packages.find((p) => p.id === reservation.packageId);
+  const selectedPackageItems = Object.entries(reservation.packageSelections).map(
+    ([packageId, quantity]) => ({
+      item: packages.find((menuPackage) => menuPackage.id === packageId),
+      packageId,
+      quantity,
+    }),
+  );
   const selectedTable = tables.find((t) => t.id === reservation.tableId);
 
   // Format Indonesian Date
@@ -275,24 +281,29 @@ export const TicketView: React.FC<TicketViewProps> = ({
                       Rincian Paket & Pesanan
                     </span>
                     <div className="space-y-2 mb-4 text-xs">
-                      {/* Main package */}
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-semibold text-[#1a0f0b]">
-                            {selectedPackage?.name || "Paket Rame-Rame"} (
-                            {reservation.pax} Porsi)
-                          </p>
-                          <p className="text-[10px] text-[#635e53]">
-                            Termasuk Takjil Kurma, Kolak & Teh Manis
-                          </p>
-                        </div>
-                        <span className="font-medium text-[#1a0f0b]">
-                          Rp
-                          {(
-                            (selectedPackage?.price || 115000) * reservation.pax
-                          ).toLocaleString("id-ID")}
-                        </span>
-                      </div>
+                      {selectedPackageItems.map(({ item, packageId, quantity }) => {
+                        const unitPrice = item?.price ?? 0;
+                        return (
+                          <div
+                            key={packageId}
+                            className="flex justify-between items-start"
+                          >
+                            <div>
+                              <p className="font-semibold text-[#1a0f0b]">
+                                {item?.name ?? "A la Carte"} ({quantity} orang)
+                              </p>
+                              {item && (
+                                <p className="text-[10px] text-[#635e53]">
+                                  Rp{unitPrice.toLocaleString("id-ID")} per orang
+                                </p>
+                              )}
+                            </div>
+                            <span className="font-medium text-[#1a0f0b]">
+                              Rp{(unitPrice * quantity).toLocaleString("id-ID")}
+                            </span>
+                          </div>
+                        );
+                      })}
 
                       {/* Addon items */}
                       {Object.entries(reservation.addons).map(

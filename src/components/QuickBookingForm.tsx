@@ -31,6 +31,7 @@ interface QuickBookingFormProps {
       | "bookingId"
       | "createdAt"
       | "status"
+      | "packageSelections"
       | "subtotal"
       | "taxAmount"
       | "totalAmount"
@@ -211,9 +212,6 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                         {pkg.isPopular ? " - Favorit" : ""}
                       </option>
                     ))}
-                    <option value="a-la-carte">
-                      A La Carte / Menu Reguler
-                    </option>
                   </select>
                 </div>
                 <div>

@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
-import { Calendar, Ticket, Bell, X, CheckCircle } from 'lucide-react';
-import dlinggaLogo from '../img/dlingga.jpg';
+import React, { useState } from "react";
+import { Calendar, Ticket, Bell, X, CheckCircle } from "lucide-react";
+import dlinggaLogo from "../img/dlingga.jpg";
 
 interface HeaderProps {
-  currentView: 'landing' | 'wizard' | 'ticket';
+  currentView: "landing" | "wizard" | "ticket";
   onNavigateHome: () => void;
-  onStartBooking: (selectedPackageId?: string, selectedTableId?: string) => void;
+  onStartBooking: (
+    selectedPackageId?: string,
+    selectedTableId?: string,
+  ) => void;
   onOpenCheckTicket: () => void;
   activeBookingId?: string | null;
 }
@@ -21,17 +24,17 @@ export const Header: React.FC<HeaderProps> = ({
 
   const notifications = [
     {
-      id: '1',
-      title: 'Slot Iftar Maghrib Menipis',
-      desc: 'Sisa 4 meja untuk area indoor ber-AC hari ini. Amankan sebelum 16.00 WIB.',
-      time: '10 menit lalu',
+      id: "1",
+      title: "Slot Iftar Maghrib Menipis",
+      desc: "Sisa 4 meja untuk area indoor ber-AC hari ini. Amankan sebelum 16.00 WIB.",
+      time: "10 menit lalu",
       unread: true,
     },
     {
-      id: '2',
-      title: 'Menu Spesial Iga Bakar Madu',
-      desc: 'Paket Premium Sultan kini dilengkapi welcome mocktail kurma mint.',
-      time: '1 jam lalu',
+      id: "2",
+      title: "Menu Spesial Iga Bakar Madu",
+      desc: "Paket Premium Sultan kini dilengkapi welcome mocktail kurma mint.",
+      time: "1 jam lalu",
       unread: false,
     },
   ];
@@ -45,12 +48,16 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center gap-2.5 group cursor-pointer text-left"
         >
           <div className="w-10 h-10 rounded-lg overflow-hidden shadow-xs transition-transform group-hover:scale-105">
-            <img src={dlinggaLogo} alt="Logo Dlingga" className="h-full w-full object-cover" />
+            <img
+              src={dlinggaLogo}
+              alt="Logo Dlingga"
+              className="h-full w-full object-cover"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-display text-xl font-bold text-[#1a0f0b] tracking-tight">
-                Bukber Lounge
+                D'Lingga Coffee
               </span>
               <span className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-semibold tracking-wide rounded bg-[#faebe2] text-[#D98A45] border border-[#E7DFD4]">
                 IFTAR 1446H
@@ -66,9 +73,11 @@ export const Header: React.FC<HeaderProps> = ({
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
           <button
             onClick={() => {
-              if (currentView !== 'landing') onNavigateHome();
+              if (currentView !== "landing") onNavigateHome();
               setTimeout(() => {
-                document.getElementById('paket')?.scrollIntoView({ behavior: 'smooth' });
+                document
+                  .getElementById("paket")
+                  ?.scrollIntoView({ behavior: "smooth" });
               }, 50);
             }}
             className="text-[#635e53] hover:text-[#D98A45] transition-colors cursor-pointer"
@@ -77,9 +86,11 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             onClick={() => {
-              if (currentView !== 'landing') onNavigateHome();
+              if (currentView !== "landing") onNavigateHome();
               setTimeout(() => {
-                document.getElementById('denah')?.scrollIntoView({ behavior: 'smooth' });
+                document
+                  .getElementById("denah")
+                  ?.scrollIntoView({ behavior: "smooth" });
               }, 50);
             }}
             className="text-[#635e53] hover:text-[#D98A45] transition-colors cursor-pointer"
@@ -88,9 +99,11 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             onClick={() => {
-              if (currentView !== 'landing') onNavigateHome();
+              if (currentView !== "landing") onNavigateHome();
               setTimeout(() => {
-                document.getElementById('fasilitas')?.scrollIntoView({ behavior: 'smooth' });
+                document
+                  .getElementById("fasilitas")
+                  ?.scrollIntoView({ behavior: "smooth" });
               }, 50);
             }}
             className="text-[#635e53] hover:text-[#D98A45] transition-colors cursor-pointer"
@@ -99,9 +112,11 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             onClick={() => {
-              if (currentView !== 'landing') onNavigateHome();
+              if (currentView !== "landing") onNavigateHome();
               setTimeout(() => {
-                document.getElementById('lokasi')?.scrollIntoView({ behavior: 'smooth' });
+                document
+                  .getElementById("lokasi")
+                  ?.scrollIntoView({ behavior: "smooth" });
               }, 50);
             }}
             className="text-[#635e53] hover:text-[#D98A45] transition-colors cursor-pointer"
@@ -146,7 +161,9 @@ export const Header: React.FC<HeaderProps> = ({
                     >
                       <div className="flex items-center justify-between font-semibold text-[#1a0f0b]">
                         <span>{n.title}</span>
-                        <span className="text-[10px] text-[#635e53] font-normal">{n.time}</span>
+                        <span className="text-[10px] text-[#635e53] font-normal">
+                          {n.time}
+                        </span>
                       </div>
                       <p className="text-[#635e53] mt-1">{n.desc}</p>
                     </div>
@@ -165,7 +182,10 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden sm:inline">Cek Tiket</span>
             <span className="sm:hidden">Tiket</span>
             {activeBookingId && (
-              <span className="w-2 h-2 rounded-full bg-[#71916B]" title="Tiket Aktif Tersedia" />
+              <span
+                className="w-2 h-2 rounded-full bg-[#71916B]"
+                title="Tiket Aktif Tersedia"
+              />
             )}
           </button>
 

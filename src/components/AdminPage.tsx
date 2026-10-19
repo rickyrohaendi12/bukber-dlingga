@@ -297,9 +297,6 @@ export const AdminPage: React.FC = () => {
 
   };
 
-  const selectedPackage = selectedBooking
-    ? MENU_PACKAGES.find((item) => item.id === selectedBooking.packageId)
-    : undefined;
   const selectedTable = selectedBooking
     ? INITIAL_TABLES.find((table) => table.id === selectedBooking.tableId)
     : undefined;
@@ -688,35 +685,52 @@ export const AdminPage: React.FC = () => {
                     </span>
                   </div>
                   <div className="rounded-xl border border-[#E7DFD4] bg-[#fffdfa] p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-[#1a0f0b]">
-                          {selectedPackage?.name ?? "Paket menu reguler"}
-                        </p>
-                        {selectedPackage?.features.length ? (
-                          <ul className="mt-2 space-y-1.5">
-                            {selectedPackage.features.map((feature) => (
-                              <li
-                                key={feature}
-                                className="flex gap-2 text-xs leading-5 text-[#635e53]"
-                              >
-                                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#71916B]" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="mt-1 text-xs text-[#8a7d73]">
-                            Belum ada rincian item paket.
-                          </p>
-                        )}
-                      </div>
-                      <span className="shrink-0 text-xs font-semibold text-[#635e53]">
-                        {selectedPackage
-                          ? `${formatRupiah(selectedPackage.price)} × ${selectedBooking.pax}`
-                          : "—"}
-                      </span>
-                    </div>
+                    <ul className="space-y-3">
+                      {Object.entries(selectedBooking.packageSelections).map(
+                        ([packageId, quantity]) => {
+                          const item = MENU_PACKAGES.find(
+                            (menuPackage) => menuPackage.id === packageId,
+                          );
+                          return (
+                            <li
+                              key={packageId}
+                              className="flex items-start justify-between gap-3"
+                            >
+                              <div>
+                                <p className="font-semibold text-[#1a0f0b]">
+                                  {item?.name ?? "A la Carte"}
+                                  <span className="ml-1 text-xs font-normal text-[#635e53]">
+                                    × {quantity} orang
+                                  </span>
+                                </p>
+                                {item?.features.length ? (
+                                  <ul className="mt-2 space-y-1.5">
+                                    {item.features.map((feature) => (
+                                      <li
+                                        key={feature}
+                                        className="flex gap-2 text-xs leading-5 text-[#635e53]"
+                                      >
+                                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#71916B]" />
+                                        {feature}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p className="mt-1 text-xs text-[#8a7d73]">
+                                    Menu dipilih melalui item A la Carte.
+                                  </p>
+                                )}
+                              </div>
+                              <span className="shrink-0 text-xs font-semibold text-[#635e53]">
+                                {item
+                                  ? formatRupiah(item.price * quantity)
+                                  : "Sesuai item"}
+                              </span>
+                            </li>
+                          );
+                        },
+                      )}
+                    </ul>
 
                     {Object.entries(selectedBooking.addons).length > 0 && (
                       <div className="mt-4 border-t border-[#F0EAE4] pt-3">

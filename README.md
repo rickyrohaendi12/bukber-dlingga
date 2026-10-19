@@ -20,6 +20,18 @@ perubahan status, serta kebijakan akses Supabase. Daftar dan perubahan status
 reservasi hanya tersedia untuk akun Supabase yang memiliki role admin di
 `app_metadata`.
 
+Di wizard booking, pelanggan dapat membagi tamu ke beberapa pilihan menu dalam
+satu reservasi, misalnya 1 Paket Hemat, 2 Paket Premium Sultan, dan 1 A la
+Carte. Jumlah alokasi harus sama dengan jumlah tamu. A la Carte tidak memiliki
+harga dasar paket, jadi pilih setidaknya satu item minuman/camilan untuk
+reservasi yang memakainya. Harga paket, add-on, dan pajak dihitung ulang di
+database.
+
+Jika project sudah menjalankan migration versi sebelumnya, jalankan kembali
+seluruh isi file migration terbaru yang sama di SQL Editor. Migration ini
+menambahkan penyimpanan pilihan per paket dan memperbarui fungsi
+`create_reservation`; jalankan sebelum memakai pemesanan paket campuran.
+
 Setelah migration dijalankan:
 
 1. Buat akun email/password admin melalui **Authentication → Users** di

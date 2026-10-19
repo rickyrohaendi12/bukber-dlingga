@@ -9,6 +9,7 @@ interface ReservationRow {
   time_slot: string;
   pax: number;
   package_id: string;
+  package_selections: Record<string, number>;
   table_id: string;
   notes: string;
   addons: Record<string, number>;
@@ -27,6 +28,10 @@ const mapReservation = (row: ReservationRow): ReservationData => ({
   timeSlot: row.time_slot,
   pax: row.pax,
   packageId: row.package_id,
+  packageSelections:
+    Object.keys(row.package_selections ?? {}).length > 0
+      ? row.package_selections
+      : { [row.package_id]: row.pax },
   tableId: row.table_id,
   notes: row.notes,
   addons: row.addons,
@@ -74,6 +79,7 @@ export const createReservation = async (
       timeSlot: reservation.timeSlot,
       pax: reservation.pax,
       packageId: reservation.packageId,
+      packageSelections: reservation.packageSelections,
       tableId: reservation.tableId,
       notes: reservation.notes ?? '',
       addons: reservation.addons,

@@ -112,6 +112,7 @@ function PublicApp() {
     data: Omit<
       ReservationData,
       'bookingId' | 'createdAt' | 'status' | 'subtotal' | 'taxAmount' | 'totalAmount'
+      | 'packageSelections'
     >
   ) => {
     const chosenTable = tables.find((table) => table.id === data.tableId);
@@ -123,7 +124,10 @@ function PublicApp() {
     }
 
     try {
-      const newReservation = await createReservation(data);
+      const newReservation = await createReservation({
+        ...data,
+        packageSelections: { [data.packageId]: data.pax },
+      });
       setBookedTableIds((current) => [...new Set([...current, newReservation.tableId])]);
       setActiveReservation(newReservation);
       setBackendError('');
