@@ -35,6 +35,36 @@ import {
   isTableCapacitySuitable,
 } from './data/reservations';
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string' && error.length > 0) return error;
+  if (typeof error !== 'object' || error === null) return fallback;
+
+  const details = error as {
+    message?: unknown;
+    code?: unknown;
+    details?: unknown;
+    hint?: unknown;
+    status?: unknown;
+    statusText?: unknown;
+    name?: unknown;
+  };
+  const parts = [
+    details.message,
+    details.code,
+    details.details,
+    details.hint,
+    details.status,
+    details.statusText,
+  ].filter((part): part is string => typeof part === 'string' && part.length > 0);
+
+  return parts.length > 0
+    ? parts.join('\n')
+    : typeof details.name === 'string'
+      ? `${details.name}: ${fallback}`
+      : fallback;
+};
+
 export default function App() {
   if (window.location.pathname.replace(/\/+$/, '') === '/admin-dlingga-9746') {
     return <AdminPage />;
@@ -134,7 +164,8 @@ function PublicApp() {
       setCurrentView('ticket');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Gagal membuat reservasi.';
+      console.error('Failed to create reservation from quick booking:', error);
+      const message = getErrorMessage(error, 'Gagal membuat reservasi.');
       window.alert(message.includes('TABLE_ALREADY_BOOKED')
         ? `Meja ${data.tableId} pada tanggal ${data.date} sudah dipesan. Silakan pilih meja atau tanggal lain.`
         : message);
@@ -164,7 +195,8 @@ function PublicApp() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return savedReservation;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Gagal membuat reservasi.';
+      console.error('Failed to create reservation from booking wizard:', error);
+      const message = getErrorMessage(error, 'Gagal membuat reservasi.');
       window.alert(message.includes('TABLE_ALREADY_BOOKED')
         ? `Meja ${newReservation.tableId} pada tanggal ${newReservation.date} sudah dipesan. Silakan pilih meja atau tanggal lain.`
         : message);
