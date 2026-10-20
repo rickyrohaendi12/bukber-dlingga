@@ -103,20 +103,44 @@ function PublicApp() {
 
   useEffect(() => {
     let isCurrent = true;
-    getBookedTableIds(bookingDate)
-      .then((tableIds) => {
+    let isLoading = false;
+
+    const refreshBookedTables = async () => {
+      if (isLoading) return;
+      isLoading = true;
+      try {
+        const tableIds = await getBookedTableIds(bookingDate);
         if (isCurrent) {
           setBookedTableIds(tableIds);
           setBackendError('');
         }
-      })
-      .catch((error: unknown) => {
+      } catch (error: unknown) {
         if (isCurrent) {
           setBackendError(error instanceof Error ? error.message : 'Gagal memuat data reservasi.');
         }
-      });
+      } finally {
+        isLoading = false;
+      }
+    };
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshBookedTables();
+      }
+    };
+
+    void refreshBookedTables();
+    const refreshInterval = window.setInterval(() => {
+      void refreshBookedTables();
+    }, 15_000);
+    window.addEventListener('focus', refreshWhenVisible);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+
     return () => {
       isCurrent = false;
+      window.clearInterval(refreshInterval);
+      window.removeEventListener('focus', refreshWhenVisible);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
     };
   }, [bookingDate]);
 
