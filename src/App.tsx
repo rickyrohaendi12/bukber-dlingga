@@ -338,10 +338,7 @@ function PublicApp() {
               <QuickBookingForm
                 packages={MENU_PACKAGES}
                 availableTables={tables}
-                date={bookingDate}
                 onDateChange={setBookingDate}
-                preselectedTableId={preselectedTableId}
-                preselectedPackageId={preselectedPackageId}
                 onSubmitReservation={handleQuickSubmit}
                 onSelectTableDirectly={() => {
                   document.getElementById('denah')?.scrollIntoView({ behavior: 'smooth' });
@@ -359,7 +356,6 @@ function PublicApp() {
             initialDate={bookingDate}
             onDateChange={setBookingDate}
             initialPackageId={preselectedPackageId}
-            initialTableId={preselectedTableId}
             onBack={() => {
               setCurrentView('landing');
               window.scrollTo({ top: 0, behavior: 'smooth' });

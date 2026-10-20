@@ -1,6 +1,13 @@
-import React, { useState } from "react";
-import { Calendar, Ticket, Bell, X, CheckCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Calendar, Ticket } from "lucide-react";
 import dlinggaLogo from "../img/dlingga.jpg";
+
+const NAV_SECTIONS = [
+  { id: "paket", label: "Paket Bukber" },
+  { id: "fasilitas", label: "Fasilitas Ibadah" },
+  { id: "denah", label: "Denah Meja" },
+  { id: "lokasi", label: "Lokasi & Jam" },
+] as const;
 
 interface HeaderProps {
   currentView: "landing" | "wizard" | "ticket";
@@ -20,24 +27,34 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCheckTicket,
   activeBookingId,
 }) => {
-  const [showNotifications, setShowNotifications] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
-  const notifications = [
-    {
-      id: "1",
-      title: "Slot Iftar Maghrib Menipis",
-      desc: "Sisa 4 meja untuk area indoor ber-AC hari ini. Amankan sebelum 16.00 WIB.",
-      time: "10 menit lalu",
-      unread: true,
-    },
-    {
-      id: "2",
-      title: "Menu Spesial Iga Bakar Madu",
-      desc: "Paket Premium Sultan kini dilengkapi welcome mocktail kurma mint.",
-      time: "1 jam lalu",
-      unread: false,
-    },
-  ];
+  useEffect(() => {
+    if (currentView !== "landing") {
+      setActiveSection(null);
+      return;
+    }
+
+    const updateActiveSection = () => {
+      const headerHeight =
+        document.querySelector("header")?.getBoundingClientRect().height ?? 64;
+      const currentSection = NAV_SECTIONS.filter(({ id }) => {
+        const section = document.getElementById(id);
+        return section && section.getBoundingClientRect().top <= headerHeight + 1;
+      }).at(-1);
+
+      setActiveSection(currentSection?.id ?? null);
+    };
+
+    updateActiveSection();
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("resize", updateActiveSection);
+
+    return () => {
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
+    };
+  }, [currentView]);
 
   return (
     <header className="sticky top-0 z-40 bg-[#F8F5F0]/95 backdrop-blur-md border-b border-[#E7DFD4] shadow-xs">
@@ -71,108 +88,31 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
-          <button
-            onClick={() => {
-              if (currentView !== "landing") onNavigateHome();
-              setTimeout(() => {
-                document
-                  .getElementById("paket")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }, 50);
-            }}
-            className="text-[#635e53] hover:text-[#D98A45] transition-colors cursor-pointer"
-          >
-            Paket Bukber
-          </button>
-          <button
-            onClick={() => {
-              if (currentView !== "landing") onNavigateHome();
-              setTimeout(() => {
-                document
-                  .getElementById("denah")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }, 50);
-            }}
-            className="text-[#635e53] hover:text-[#D98A45] transition-colors cursor-pointer"
-          >
-            Denah Meja
-          </button>
-          <button
-            onClick={() => {
-              if (currentView !== "landing") onNavigateHome();
-              setTimeout(() => {
-                document
-                  .getElementById("fasilitas")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }, 50);
-            }}
-            className="text-[#635e53] hover:text-[#D98A45] transition-colors cursor-pointer"
-          >
-            Fasilitas Ibadah
-          </button>
-          <button
-            onClick={() => {
-              if (currentView !== "landing") onNavigateHome();
-              setTimeout(() => {
-                document
-                  .getElementById("lokasi")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }, 50);
-            }}
-            className="text-[#635e53] hover:text-[#D98A45] transition-colors cursor-pointer"
-          >
-            Lokasi & Jam
-          </button>
+          {NAV_SECTIONS.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => {
+                if (currentView !== "landing") onNavigateHome();
+                setTimeout(() => {
+                  document
+                    .getElementById(id)
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }, 50);
+              }}
+              aria-current={activeSection === id ? "location" : undefined}
+              className={`transition-colors cursor-pointer ${
+                activeSection === id
+                  ? "text-[#D98A45] font-semibold"
+                  : "text-[#635e53] hover:text-[#D98A45]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </nav>
 
         {/* Trailing Action Cluster */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Notification Button */}
-          <div className="relative">
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 text-[#635e53] hover:text-[#D98A45] hover:bg-[#faebe2]/60 rounded-lg transition-colors cursor-pointer relative"
-              title="Notifikasi Ketersediaan"
-              aria-label="Notifikasi Ketersediaan"
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#D98A45] rounded-full animate-pulse" />
-            </button>
-
-            {/* Notification Dropdown */}
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-[#E7DFD4] p-3 z-50 animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center justify-between pb-2 border-b border-[#E7DFD4] mb-2">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#1a0f0b]">
-                    Update Kursi Iftar
-                  </span>
-                  <button
-                    onClick={() => setShowNotifications(false)}
-                    className="text-[#635e53] hover:text-[#1a0f0b] p-0.5 rounded cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      className="p-2 rounded-lg bg-[#F8F5F0] hover:bg-[#faebe2]/50 transition-colors text-xs"
-                    >
-                      <div className="flex items-center justify-between font-semibold text-[#1a0f0b]">
-                        <span>{n.title}</span>
-                        <span className="text-[10px] text-[#635e53] font-normal">
-                          {n.time}
-                        </span>
-                      </div>
-                      <p className="text-[#635e53] mt-1">{n.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Cek Tiket */}
           <button
             onClick={onOpenCheckTicket}

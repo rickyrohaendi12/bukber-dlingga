@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   Clock,
   MapPin,
-  Car,
   ExternalLink,
   Calendar,
   Users,
@@ -21,10 +20,7 @@ import {
 interface QuickBookingFormProps {
   packages: MenuItem[];
   availableTables: TableItem[];
-  date: string;
   onDateChange: (date: string) => void;
-  preselectedTableId?: string;
-  preselectedPackageId?: string;
   onSubmitReservation: (
     data: Omit<
       ReservationData,
@@ -43,47 +39,61 @@ interface QuickBookingFormProps {
 export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
   packages,
   availableTables,
-  date,
   onDateChange,
-  preselectedTableId,
-  preselectedPackageId,
   onSubmitReservation,
   onSelectTableDirectly,
 }) => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [timeSlot, setTimeSlot] = useState("17.30 - 19.30 WIB");
-  const [packageId, setPackageId] = useState(
-    preselectedPackageId || "paket-rame-rame",
-  );
-  const [pax, setPax] = useState<number>(4);
-  const [tableId, setTableId] = useState(preselectedTableId || "M-01");
+  const [date, setDate] = useState("");
+  const [timeSlot, setTimeSlot] = useState("");
+  const [packageId, setPackageId] = useState("");
+  const [pax, setPax] = useState<number | "">("");
+  const [tableId, setTableId] = useState("");
   const [notes, setNotes] = useState("");
-  const recommendedCapacity = getSmallestSuitableTableCapacity(pax, availableTables);
+  const [formError, setFormError] = useState("");
+  const paxCount = typeof pax === "number" ? pax : 0;
+  const recommendedCapacity = paxCount
+    ? getSmallestSuitableTableCapacity(paxCount, availableTables)
+    : null;
   const capacitySuitableTables = useMemo(
-    () => availableTables.filter((table) => table.seats === recommendedCapacity),
+    () =>
+      availableTables.filter(
+        (table) =>
+          table.status === "available" &&
+          (!recommendedCapacity || table.seats === recommendedCapacity),
+      ),
     [availableTables, recommendedCapacity],
   );
 
   useEffect(() => {
-    if (!capacitySuitableTables.some((table) => table.id === tableId)) {
-      setTableId(capacitySuitableTables[0]?.id || "");
+    if (tableId && !capacitySuitableTables.some((table) => table.id === tableId)) {
+      setTableId("");
     }
   }, [capacitySuitableTables, tableId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName.trim() || !customerPhone.trim()) {
-      alert("Mohon isi nama dan nomor WhatsApp Anda terlebih dahulu.");
+    setFormError("");
+    if (
+      !customerName.trim() ||
+      !customerPhone.trim() ||
+      !date ||
+      !timeSlot ||
+      !packageId ||
+      !paxCount ||
+      !tableId
+    ) {
+      setFormError("Mohon lengkapi semua data wajib sebelum mengirim reservasi.");
       return;
     }
     const chosenTable = availableTables.find((table) => table.id === tableId);
     if (
       !chosenTable ||
-      !isTableCapacitySuitable(pax, chosenTable, availableTables)
+      !isTableCapacitySuitable(paxCount, chosenTable, availableTables)
     ) {
-      alert(
-        `Tidak ada meja dengan kapasitas paling kecil yang cukup untuk ${pax} orang. Silakan sesuaikan jumlah tamu.`,
+      setFormError(
+        `Tidak ada meja dengan kapasitas paling kecil yang cukup untuk ${paxCount} orang. Silakan sesuaikan jumlah tamu.`,
       );
       return;
     }
@@ -93,7 +103,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
       customerPhone,
       date,
       timeSlot,
-      pax,
+      pax: paxCount,
       packageId,
       tableId,
       notes,
@@ -109,78 +119,115 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left: Form Reservasi (7 Cols) */}
-          <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E7DFD4] p-6 sm:p-8 shadow-xs">
-            <div className="border-b border-[#E7DFD4] pb-4 mb-6">
-              <span className="text-xs text-[#D98A45] font-bold uppercase tracking-wider block">
-                Formulir Pemesanan
+          <div className="lg:col-span-7 rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-sm sm:p-8">
+            <div className="mb-6 border-b border-[#E7DFD4] pb-5">
+              <span className="mb-1 block text-sm font-bold uppercase tracking-wider text-[#9a5929]">
+                Reservasi Bukber
               </span>
-              <h2 className="font-display text-2xl font-bold text-[#1a0f0b] mt-1">
-                Formulir Reservasi Meja Bukber
+              <h2 className="font-display text-2xl font-bold leading-tight text-[#1a0f0b] sm:text-3xl">
+                Pesan meja dengan mudah
               </h2>
-              <p className="text-xs sm:text-sm text-[#635e53]">
-                Isi data di bawah ini untuk mengunci kuota meja Anda seketika.
+              <p className="mt-2 text-base leading-relaxed text-[#4f4542]">
+                Lengkapi data, jadwal, dan pilihan meja. Kolom bertanda{" "}
+                <span className="font-bold text-[#9a5929]">*</span> wajib diisi.
               </p>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form className="space-y-7" onSubmit={handleSubmit} autoComplete="off">
               {/* Nama & Kontak */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <fieldset className="space-y-4">
+                <legend className="mb-1 text-lg font-bold text-[#1a0f0b]">
+                  1. Data pemesan
+                </legend>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-[#1a0f0b] mb-1.5 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-[#635e53]" />
-                    Nama Pemesan
+                  <label htmlFor="quick-booking-name" className="mb-2 flex items-center gap-2 text-base font-semibold text-[#1a0f0b]">
+                    <User className="h-4 w-4 text-[#635e53]" aria-hidden="true" />
+                    Nama pemesan <span aria-hidden="true" className="text-[#9a5929]">*</span>
                   </label>
                   <input
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] bg-[#fff8f5] outline-none transition"
-                    placeholder="Contoh: Farhan Nugraha"
+                    id="quick-booking-name"
+                    className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition placeholder:text-[#746a61] focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
+                    placeholder="Masukkan nama lengkap"
                     value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerName(e.target.value);
+                      setFormError("");
+                    }}
                     required
                     type="text"
+                    autoComplete="name"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#1a0f0b] mb-1.5 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-[#635e53]" />
-                    Nomor WhatsApp Aktif
+                  <label htmlFor="quick-booking-phone" className="mb-2 flex items-center gap-2 text-base font-semibold text-[#1a0f0b]">
+                    <Phone className="h-4 w-4 text-[#635e53]" aria-hidden="true" />
+                    Nomor WhatsApp <span aria-hidden="true" className="text-[#9a5929]">*</span>
                   </label>
                   <input
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] bg-[#fff8f5] outline-none transition"
-                    placeholder="0812-XXXX-XXXX"
+                    id="quick-booking-phone"
+                    className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition placeholder:text-[#746a61] focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
+                    placeholder="Contoh: 081234567890"
                     value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerPhone(e.target.value);
+                      setFormError("");
+                    }}
                     required
                     type="tel"
+                    autoComplete="tel"
                   />
+                  <p className="mt-1.5 text-sm leading-relaxed text-[#4f4542]">
+                    Kami mengirim konfirmasi ke nomor ini.
+                  </p>
                 </div>
-              </div>
+                </div>
+              </fieldset>
 
               {/* Tanggal & Sesi */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <fieldset className="space-y-4 border-t border-[#E7DFD4] pt-6">
+                <legend className="mb-1 text-lg font-bold text-[#1a0f0b]">
+                  2. Jadwal kedatangan
+                </legend>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-[#1a0f0b] mb-1.5 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-[#635e53]" />
-                    Pilih Tanggal Iftar
+                  <label htmlFor="quick-booking-date" className="mb-2 flex items-center gap-2 text-base font-semibold text-[#1a0f0b]">
+                    <Calendar className="h-4 w-4 text-[#635e53]" aria-hidden="true" />
+                    Tanggal bukber <span aria-hidden="true" className="text-[#9a5929]">*</span>
                   </label>
                   <input
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] bg-[#fff8f5] outline-none transition"
+                    id="quick-booking-date"
+                    className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
                     value={date}
                     min={getTodayDate()}
-                    onChange={(e) => onDateChange(e.target.value)}
+                    onChange={(e) => {
+                      setDate(e.target.value);
+                      onDateChange(e.target.value);
+                      setTableId("");
+                      setFormError("");
+                    }}
                     required
                     type="date"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#1a0f0b] mb-1.5 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-[#635e53]" />
-                    Waktu Kedatangan
+                  <label htmlFor="quick-booking-time" className="mb-2 flex items-center gap-2 text-base font-semibold text-[#1a0f0b]">
+                    <Clock className="h-4 w-4 text-[#635e53]" aria-hidden="true" />
+                    Waktu kedatangan <span aria-hidden="true" className="text-[#9a5929]">*</span>
                   </label>
                   <select
+                    id="quick-booking-time"
                     value={timeSlot}
-                    onChange={(e) => setTimeSlot(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] bg-[#fff8f5] outline-none transition"
+                    onChange={(e) => {
+                      setTimeSlot(e.target.value);
+                      setFormError("");
+                    }}
+                    required
+                    className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
                   >
+                    <option value="" disabled>
+                      Pilih waktu kedatangan
+                    </option>
                     <option value="16.30 WIB">
                       16.30 WIB (Paling Dianjurkan)
                     </option>
@@ -193,19 +240,32 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                     </option>
                   </select>
                 </div>
-              </div>
+                </div>
+              </fieldset>
 
               {/* Paket & Jumlah Tamu */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <fieldset className="space-y-4 border-t border-[#E7DFD4] pt-6">
+                <legend className="mb-1 text-lg font-bold text-[#1a0f0b]">
+                  3. Paket dan jumlah tamu
+                </legend>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-[#1a0f0b] mb-1.5">
-                    Pilihan Paket Bukber
+                  <label htmlFor="quick-booking-package" className="mb-2 block text-base font-semibold text-[#1a0f0b]">
+                    Paket bukber <span aria-hidden="true" className="text-[#9a5929]">*</span>
                   </label>
                   <select
+                    id="quick-booking-package"
                     value={packageId}
-                    onChange={(e) => setPackageId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] bg-[#fff8f5] outline-none transition"
+                    onChange={(e) => {
+                      setPackageId(e.target.value);
+                      setFormError("");
+                    }}
+                    required
+                    className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
                   >
+                    <option value="" disabled>
+                      Pilih paket bukber
+                    </option>
                     {packages.map((pkg) => (
                       <option key={pkg.id} value={pkg.id}>
                         {pkg.name} (Rp{pkg.price.toLocaleString("id-ID")}/org)
@@ -215,82 +275,112 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#1a0f0b] mb-1.5 flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-[#635e53]" />
-                    Jumlah Tamu (Pax)
+                  <label htmlFor="quick-booking-pax" className="mb-2 flex items-center gap-2 text-base font-semibold text-[#1a0f0b]">
+                    <Users className="h-4 w-4 text-[#635e53]" aria-hidden="true" />
+                    Jumlah tamu <span aria-hidden="true" className="text-[#9a5929]">*</span>
                   </label>
                   <input
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] bg-[#fff8f5] outline-none transition"
-                    max={100}
+                    id="quick-booking-pax"
+                    className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
+                    max={12}
                     min={2}
                     value={pax}
-                    onChange={(e) =>
-                      setPax(Math.max(2, parseInt(e.target.value) || 2))
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setPax(value ? Math.min(12, Math.max(2, parseInt(value, 10) || 2)) : "");
+                      setTableId("");
+                      setFormError("");
+                    }}
                     required
                     type="number"
                   />
+                  <p className="mt-1.5 text-sm text-[#4f4542]">Minimal 2, maksimal 12 orang.</p>
                 </div>
-              </div>
+                </div>
+              </fieldset>
 
               {/* Pilihan Meja */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-[#1a0f0b]">
-                    Pilihan Meja ({tableId})
+              <fieldset className="space-y-3 border-t border-[#E7DFD4] pt-6">
+                <legend className="mb-1 text-lg font-bold text-[#1a0f0b]">
+                  4. Pilih meja
+                </legend>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <label htmlFor="quick-booking-table" className="text-base font-semibold text-[#1a0f0b]">
+                    Meja tersedia <span aria-hidden="true" className="text-[#9a5929]">*</span>
                   </label>
                   <button
                     type="button"
                     onClick={onSelectTableDirectly}
-                    className="text-xs text-[#D98A45] hover:underline font-semibold cursor-pointer"
+                    className="min-h-11 w-fit rounded-lg px-2 text-sm font-bold text-[#8c4d20] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929]"
                   >
-                    Buka Denah Interaktif →
+                    Lihat denah meja →
                   </button>
                 </div>
                 <select
+                  id="quick-booking-table"
                   value={tableId}
-                  onChange={(e) => setTableId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] bg-[#fff8f5] outline-none transition"
+                  onChange={(e) => {
+                    setTableId(e.target.value);
+                    setFormError("");
+                  }}
+                  required
+                  disabled={!paxCount || capacitySuitableTables.length === 0}
+                  className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#F8F5F0] disabled:text-[#635e53]"
                 >
+                  <option value="" disabled>
+                    {!paxCount
+                      ? "Isi jumlah tamu terlebih dahulu"
+                      : capacitySuitableTables.length === 0
+                        ? "Tidak ada meja tersedia untuk jumlah tamu ini"
+                        : "Pilih meja yang tersedia"}
+                  </option>
                   {capacitySuitableTables.map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.name} - {t.zoneName} ({t.seats} Kursi){" "}
-                      {t.status === "reserved" ? "[Reserved]" : "[Tersedia]"}
+                      {t.name} - {t.zoneName} ({t.seats} Kursi)
                     </option>
                   ))}
                 </select>
-                <p className="mt-1.5 text-[11px] text-[#635e53]">
-                  Hanya menampilkan meja berkapasitas paling kecil yang cukup untuk {pax} orang
+                <p className="text-sm leading-relaxed text-[#4f4542]">
+                  Hanya meja yang tersedia dan sesuai kapasitas yang ditampilkan
+                  {paxCount ? ` untuk ${paxCount} orang` : ""}
                   {recommendedCapacity ? ` (${recommendedCapacity} kursi)` : ""}.
                 </p>
-              </div>
+              </fieldset>
 
               {/* Catatan Tambahan */}
-              <div>
-                <label className="block text-xs font-semibold text-[#1a0f0b] mb-1.5 flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-[#635e53]" />
-                  Catatan Khusus / Permintaan
+              <div className="border-t border-[#E7DFD4] pt-6">
+                <label htmlFor="quick-booking-notes" className="mb-2 flex items-center gap-2 text-base font-semibold text-[#1a0f0b]">
+                  <MessageSquare className="h-4 w-4 text-[#635e53]" aria-hidden="true" />
+                  Catatan tambahan <span className="font-normal text-[#635e53]">(opsional)</span>
                 </label>
                 <textarea
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-sm text-[#1a0f0b] bg-[#fff8f5] outline-none transition"
-                  placeholder="Contoh: Meja M-01 dekat area AC, minta kursi bayi 1 unit."
-                  rows={2}
+                  id="quick-booking-notes"
+                  className="min-h-24 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition placeholder:text-[#746a61] focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
+                  placeholder="Tulis permintaan khusus jika ada"
+                  rows={3}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                 />
               </div>
 
               {/* Submit Button */}
+              {formError && (
+                <p
+                  className="rounded-xl border border-[#C56A64]/40 bg-[#C56A64]/[0.08] px-4 py-3 text-base font-medium leading-relaxed text-[#8f3f3b]"
+                  role="alert"
+                >
+                  {formError}
+                </p>
+              )}
               <button
-                className="w-full py-3.5 rounded-lg bg-[#D98A45] hover:bg-[#C27734] text-white font-bold text-sm shadow-md active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#9a5929] px-5 py-4 text-base font-bold text-white shadow-md transition hover:bg-[#78451f] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] active:scale-[0.99]"
                 type="submit"
               >
-                <CheckCircle2 className="w-5 h-5" />
-                <span>Kunci Reservasi Saya Sekarang</span>
+                <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+                <span>Kirim reservasi</span>
               </button>
-              <p className="text-center text-xs text-[#635e53] pt-1">
-                *Konfirmasi reservasi otomatis diteruskan ke WhatsApp CS dalam
-                tempo &lt; 10 menit.
+              <p className="pt-1 text-center text-sm leading-relaxed text-[#4f4542]">
+                Konfirmasi reservasi akan diteruskan ke WhatsApp Customer Service dalam waktu kurang dari 10 menit.
               </p>
             </form>
           </div>

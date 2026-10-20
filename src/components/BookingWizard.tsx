@@ -34,7 +34,6 @@ interface BookingWizardProps {
   packages: MenuItem[];
   addons: AddonItem[];
   initialPackageId?: string;
-  initialTableId?: string;
   initialDate: string;
   onDateChange: (date: string) => void;
   onBack: () => void;
@@ -48,7 +47,6 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   packages,
   addons,
   initialPackageId = "paket-rame-rame",
-  initialTableId = "M-01",
   initialDate,
   onDateChange,
   onBack,
@@ -64,23 +62,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const [packageSelections, setPackageSelections] = useState<Record<string, number>>(
     () => ({ [initialPackageId]: 2 }),
   );
-  const [selectedTableId, setSelectedTableId] = useState<string>(() => {
-    const recommendedCapacity = getSmallestSuitableTableCapacity(2, tables);
-    const initialTable = tables.find((table) => table.id === initialTableId);
-    if (
-      initialTable?.status === "available" &&
-      initialTable &&
-      isTableCapacitySuitable(2, initialTable, tables)
-    ) {
-      return initialTable.id;
-    }
-    return (
-      tables.find(
-        (table) =>
-          table.status === "available" && table.seats === recommendedCapacity,
-      )?.id ?? ""
-    );
-  });
+  const [selectedTableId, setSelectedTableId] = useState("");
   const [selectedAddons, setSelectedAddons] = useState<{
     [addonId: string]: number;
   }>({});
@@ -104,26 +86,21 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       : "mixed";
   const recommendedCapacity = getSmallestSuitableTableCapacity(pax, tables);
   const capacitySuitableTables = useMemo(
-    () => tables.filter((table) => table.seats === recommendedCapacity),
+    () =>
+      recommendedCapacity
+        ? tables.filter((table) => table.seats === recommendedCapacity)
+        : tables,
     [recommendedCapacity, tables],
   );
-  const selectedTable =
-    tables.find((table) => table.id === selectedTableId) ??
-    capacitySuitableTables[0] ??
-    tables[0];
+  const selectedTable = tables.find((table) => table.id === selectedTableId);
 
   const handlePaxChange = (nextPax: number) => {
     const adjustedPax = Math.min(12, Math.max(2, assignedPax, nextPax));
     setPax(adjustedPax);
     const nextCapacity = getSmallestSuitableTableCapacity(adjustedPax, tables);
     const selectedTable = tables.find((table) => table.id === selectedTableId);
-    if (!selectedTable || selectedTable.seats !== nextCapacity) {
-      setSelectedTableId(
-        tables.find(
-          (table) =>
-            table.status === "available" && table.seats === nextCapacity,
-        )?.id ?? "",
-      );
+    if (selectedTable && selectedTable.seats !== nextCapacity) {
+      setSelectedTableId("");
     }
   };
 
@@ -371,20 +348,20 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
           {/* Left Column: Floor Plan, Schedules & Addons (7 Cols) */}
           <div className="lg:col-span-7 space-y-6">
             {/* Step 1 & 2 Fast Modifiers */}
-            <div className="bg-white rounded-2xl border border-[#E7DFD4] p-5 shadow-xs">
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#E7DFD4]">
+            <div className="rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex flex-col gap-4 border-b border-[#E7DFD4] pb-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
                 <div>
-                  <h3 className="font-display text-base font-bold text-[#1a0f0b]">
-                    Atur Waktu & Jumlah Tamu
+                  <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
+                    1. Atur jadwal dan jumlah tamu
                   </h3>
-                  <p className="text-xs text-[#635e53]">
-                    Pilih tanggal, waktu kedatangan, dan jumlah tamu untuk
-                    melihat pilihan meja.
+                  <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
+                    Tentukan jadwal terlebih dahulu untuk melihat meja yang sesuai.
                   </p>
                 </div>
-                <label className="flex items-center gap-2 text-xs font-semibold text-[#1a0f0b]">
-                  Tanggal
+                <label htmlFor="wizard-date" className="flex flex-col gap-2 text-base font-semibold text-[#1a0f0b]">
+                  Tanggal kedatangan
                   <input
+                    id="wizard-date"
                     type="date"
                     value={date}
                     min={getTodayDate()}
@@ -392,32 +369,32 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       setDate(event.target.value);
                       onDateChange(event.target.value);
                     }}
-                    className="rounded-lg border border-[#E7DFD4] bg-white px-2.5 py-2 text-xs"
+                    className="min-h-12 rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base outline-none focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
                   />
                 </label>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-[#1a0f0b]">
-                    Jumlah Tamu:
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-base font-semibold text-[#1a0f0b]">
+                    Jumlah tamu
                   </span>
-                  <div className="flex items-center border border-[#E7DFD4] rounded-lg overflow-hidden">
+                  <div className="flex min-h-12 items-center overflow-hidden rounded-xl border border-[#cfc4b7]">
                     <button
                       type="button"
                       aria-label="Kurangi jumlah tamu"
                       disabled={pax <= Math.max(assignedPax, 2)}
                       onClick={() => handlePaxChange(Math.max(2, pax - 1))}
-                      className="px-2.5 py-1 bg-[#F8F5F0] hover:bg-[#e7dfd1] text-xs font-bold cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                      className="h-12 w-12 bg-[#F8F5F0] text-xl font-bold text-[#1a0f0b] hover:bg-[#e7dfd1] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       -
                     </button>
-                    <span className="px-3 py-1 text-xs font-bold text-[#1a0f0b] bg-white">
-                      {pax} Pax
+                    <span className="min-w-24 px-3 py-2 text-center text-base font-bold text-[#1a0f0b]">
+                      {pax} orang
                     </span>
                     <button
                       type="button"
                       aria-label="Tambah jumlah tamu"
                       disabled={pax >= 12}
                       onClick={() => handlePaxChange(pax + 1)}
-                      className="px-2.5 py-1 bg-[#F8F5F0] hover:bg-[#e7dfd1] text-xs font-bold cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                      className="h-12 w-12 bg-[#F8F5F0] text-xl font-bold text-[#1a0f0b] hover:bg-[#e7dfd1] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       +
                     </button>
@@ -426,7 +403,11 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
               </div>
 
               {/* Time Slots Chips */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3">
+              <fieldset className="mt-4">
+                <legend className="mb-2 text-base font-semibold text-[#1a0f0b]">
+                  Waktu kedatangan <span className="text-[#9a5929]">*</span>
+                </legend>
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {[
                   "16.30 WIB",
                   "17.00 WIB",
@@ -443,7 +424,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                         setFormError("");
                       }}
                       aria-pressed={isSelected}
-                      className={`p-2 rounded-lg text-xs font-medium text-center border transition-all cursor-pointer ${
+                      className={`min-h-12 rounded-xl border px-3 py-3 text-base font-semibold text-center transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] ${
                         isSelected
                           ? "bg-[#30231f] text-white border-[#30231f] shadow-xs"
                           : "bg-white text-[#635e53] border-[#E7DFD4] hover:border-[#D98A45]"
@@ -453,32 +434,32 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     </button>
                   );
                 })}
-              </div>
+                </div>
+              </fieldset>
             </div>
 
             {/* Interactive Floor Plan Selector */}
-            <div className="bg-white rounded-2xl border border-[#E7DFD4] p-5 shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-[#E7DFD4] gap-2">
+            <div className="rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-4 flex flex-col gap-3 border-b border-[#E7DFD4] pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="font-display text-base font-bold text-[#1a0f0b]">
-                    Pilih Meja di Denah Kafe
+                  <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
+                    2. Pilih meja di denah
                   </h3>
-                  <p className="text-xs text-[#635e53]">
-                    Pilihan dibatasi ke kapasitas meja paling kecil yang cukup
-                    untuk {pax} orang
+                  <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
+                    Pilih meja tersedia dengan kapasitas paling kecil yang cukup untuk {pax} orang.
                   </p>
                 </div>
                 {/* Legend Mini */}
-                <div className="flex items-center gap-3 text-xs">
-                  <span className="flex items-center gap-1 text-[#635e53]">
+                <div className="flex flex-wrap gap-3 text-sm">
+                  <span className="flex items-center gap-2 text-[#4f4542]">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#71916B]" />{" "}
                     Tersedia
                   </span>
-                  <span className="flex items-center gap-1 text-[#635e53]">
+                  <span className="flex items-center gap-2 text-[#4f4542]">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#D98A45]" />{" "}
                     Reserved
                   </span>
-                  <span className="flex items-center gap-1 text-[#635e53]">
+                  <span className="flex items-center gap-2 text-[#4f4542]">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#C56A64]" />{" "}
                     Penuh
                   </span>
@@ -499,43 +480,51 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
               )}
 
               {/* Selected Table Callout */}
-              <div className="mt-4 p-3 rounded-xl bg-[#faebe2] border border-[#E7DFD4] flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#30231f] text-white flex items-center justify-center font-bold text-xs">
-                    {selectedTable.id}
+              <div className="mt-4 rounded-xl border border-[#E7DFD4] bg-[#faebe2] p-3">
+                {selectedTable ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#30231f] text-xs font-bold text-white">
+                        {selectedTable.id}
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1a0f0b]">
+                          {selectedTable.name} ({selectedTable.seats} Kursi)
+                        </p>
+                        <p className="text-[11px] text-[#635e53]">
+                          {selectedTable.zoneName} · {selectedTable.description}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="rounded-full border border-[#E7DFD4] bg-white px-2.5 py-1 text-[11px] font-bold text-[#71916B]">
+                      Dipilih
+                    </span>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-[#1a0f0b]">
-                      {selectedTable.name} ({selectedTable.seats} Kursi)
-                    </p>
-                    <p className="text-[11px] text-[#635e53]">
-                      {selectedTable.zoneName} · {selectedTable.description}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[11px] font-bold text-[#71916B] bg-white px-2.5 py-1 rounded-full border border-[#E7DFD4]">
-                  Terkunci
-                </span>
+                ) : (
+                  <p className="text-center text-base font-medium leading-relaxed text-[#4f4542]">
+                    Pilih meja yang tersedia pada denah untuk melanjutkan.
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Package Selection */}
             <section
-              className="rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-xs"
+              className="rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-sm sm:p-6"
               aria-labelledby="package-selection-title"
             >
               <div className="mb-4 border-b border-[#E7DFD4] pb-3">
                 <h3
                   id="package-selection-title"
-                  className="font-display text-base font-bold text-[#1a0f0b]"
+                  className="font-display text-lg font-bold text-[#1a0f0b]"
                 >
                   Atur menu untuk setiap tamu
                 </h3>
-                <p className="mt-1 text-xs text-[#635e53]">
+                <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
                   Bagi jumlah tamu ke paket atau A la Carte. Total pilihan harus
                   sama dengan jumlah tamu di atas.
                 </p>
-                <p className="mt-2 text-xs font-semibold text-[#D98A45]" aria-live="polite">
+                <p className="mt-2 text-sm font-semibold leading-relaxed text-[#8c4d20]" aria-live="polite">
                   Sudah dipilih: {assignedPax} dari {pax} tamu
                   {assignedPax < pax ? ` · Pilih untuk ${pax - assignedPax} tamu lagi` : " · Semua tamu sudah dipilih"}
                 </p>
@@ -553,18 +542,18 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       }`}
                     >
                       <span className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-bold text-[#1a0f0b]">
+                        <span className="text-base font-bold text-[#1a0f0b]">
                           {item.name}
                         </span>
-                        <span className="text-xs font-semibold text-[#D98A45]">
+                        <span className="text-sm font-semibold text-[#8c4d20]">
                           Rp{item.price.toLocaleString("id-ID")} / orang
                         </span>
                       </span>
-                      <span className="mt-2 block text-[11px] leading-4 text-[#635e53]">
+                      <span className="mt-2 block text-sm leading-relaxed text-[#4f4542]">
                         {item.description}
                       </span>
                       <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#E7DFD4] pt-3">
-                        <span className="text-xs text-[#635e53]">
+                        <span className="text-sm text-[#4f4542]">
                           Bisa dipilih mulai 1 orang
                         </span>
                         <div className="flex items-center gap-2">
@@ -573,11 +562,11 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                             aria-label={`Kurangi ${item.name}`}
                             disabled={quantity === 0}
                             onClick={() => handlePackageQty(item.id, -1)}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E7DFD4] text-[#1a0f0b] disabled:opacity-40"
+                            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#cfc4b7] text-[#1a0f0b] hover:bg-[#F8F5F0] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
-                          <span className="min-w-14 text-center text-xs font-bold text-[#1a0f0b]">
+                          <span className="min-w-16 text-center text-sm font-bold text-[#1a0f0b]">
                             {quantity} orang
                           </span>
                           <button
@@ -585,7 +574,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                             aria-label={`Tambah ${item.name}`}
                             disabled={assignedPax >= pax}
                             onClick={() => handlePackageQty(item.id, 1)}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#D98A45] text-white disabled:opacity-40"
+                            className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#9a5929] text-white hover:bg-[#78451f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
@@ -602,14 +591,14 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   }`}
                 >
                   <span className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-bold text-[#1a0f0b]">
+                    <span className="text-base font-bold text-[#1a0f0b]">
                       A la Carte
                     </span>
                     <span className="text-xs font-semibold text-[#D98A45]">
                       Pilih item menu
                     </span>
                   </span>
-                  <span className="mt-2 block text-[11px] leading-4 text-[#635e53]">
+                  <span className="mt-2 block text-sm leading-relaxed text-[#4f4542]">
                     Untuk tamu yang tidak memilih paket. Tambahkan minuman atau
                     camilan A la Carte di bawah.
                   </span>
@@ -619,11 +608,11 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       aria-label="Kurangi tamu A la Carte"
                       disabled={!packageSelections["a-la-carte"]}
                       onClick={() => handlePackageQty("a-la-carte", -1)}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E7DFD4] text-[#1a0f0b] disabled:opacity-40"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#cfc4b7] text-[#1a0f0b] hover:bg-[#F8F5F0] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
                     >
                       <Minus className="h-3.5 w-3.5" />
                     </button>
-                    <span className="min-w-14 text-center text-xs font-bold text-[#1a0f0b]">
+                    <span className="min-w-16 text-center text-sm font-bold text-[#1a0f0b]">
                       {packageSelections["a-la-carte"] ?? 0} orang
                     </span>
                     <button
@@ -631,7 +620,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       aria-label="Tambah tamu A la Carte"
                       disabled={assignedPax >= pax}
                       onClick={() => handlePackageQty("a-la-carte", 1)}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#D98A45] text-white disabled:opacity-40"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#9a5929] text-white hover:bg-[#78451f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
                     >
                       <Plus className="h-3.5 w-3.5" />
                     </button>
@@ -641,19 +630,19 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
             </section>
 
             {/* Addon Menu Options */}
-            <div className="bg-white rounded-2xl border border-[#E7DFD4] p-5 shadow-xs">
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#E7DFD4]">
+            <div className="rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-4 flex flex-col gap-2 border-b border-[#E7DFD4] pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="font-display text-base font-bold text-[#1a0f0b]">
-                    Tambah Minuman & Camilan Favorit
+                  <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
+                    3. Tambahan minuman dan camilan
                   </h3>
-                  <p className="text-xs text-[#635e53]">
+                  <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
                     {packageSelections["a-la-carte"]
                       ? "Wajib pilih setidaknya satu item untuk menu A la Carte."
                       : "Tambahan langsung disajikan hangat saat menjelang berbuka."}
                   </p>
                 </div>
-                <span className="text-xs font-semibold text-[#D98A45] bg-[#faebe2] px-2.5 py-1 rounded-full">
+                <span className="w-fit rounded-full bg-[#faebe2] px-3 py-1.5 text-sm font-semibold text-[#8c4d20]">
                   {packageSelections["a-la-carte"] ? "Wajib" : "Opsional"}
                 </span>
               </div>
@@ -664,23 +653,23 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   return (
                     <div
                       key={addon.id}
-                      className="flex items-center justify-between p-3 rounded-xl border border-[#E7DFD4] hover:bg-[#F8F5F0] transition-colors"
+                      className="flex flex-col gap-3 rounded-xl border border-[#E7DFD4] p-4 transition-colors hover:bg-[#F8F5F0] sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="pr-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-[#1a0f0b]">
+                          <span className="text-base font-bold text-[#1a0f0b]">
                             {addon.name}
                           </span>
-                          <span className="text-[10px] text-[#635e53] bg-[#e7dfd1] px-1.5 py-0.5 rounded">
+                          <span className="rounded-full bg-[#e7dfd1] px-2 py-1 text-xs text-[#4f4542]">
                             {addon.category}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#635e53] mt-0.5">
+                        <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
                           {addon.description}
                         </p>
-                        <p className="text-xs font-bold text-[#D98A45] mt-1">
+                        <p className="mt-1 text-sm font-bold text-[#8c4d20]">
                           Rp{addon.price.toLocaleString("id-ID")}
-                          <span className="text-[10px] text-[#635e53] font-normal">
+                          <span className="font-normal text-[#4f4542]">
                             {" "}
                             / {addon.unit}
                           </span>
@@ -692,19 +681,21 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                         {qty > 0 && (
                           <button
                             type="button"
+                            aria-label={`Kurangi ${addon.name}`}
                             onClick={() => handleAddonQty(addon.id, -1)}
-                            className="w-7 h-7 rounded-lg border border-[#E7DFD4] bg-white hover:bg-[#faebe2] flex items-center justify-center text-[#1a0f0b] cursor-pointer"
+                            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#cfc4b7] bg-white text-[#1a0f0b] hover:bg-[#faebe2] focus-visible:outline-2 focus-visible:outline-[#9a5929]"
                           >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        <span className="w-5 text-center text-xs font-bold text-[#1a0f0b]">
+                        <span className="min-w-8 text-center text-base font-bold text-[#1a0f0b]">
                           {qty}
                         </span>
                         <button
                           type="button"
+                          aria-label={`Tambah ${addon.name}`}
                           onClick={() => handleAddonQty(addon.id, 1)}
-                          className="w-7 h-7 rounded-lg bg-[#D98A45] hover:bg-[#C27734] text-white flex items-center justify-center cursor-pointer shadow-xs"
+                          className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#9a5929] text-white shadow-xs hover:bg-[#78451f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929]"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -854,77 +845,83 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
               {/* Form Data Pemesan */}
               <form
                 onSubmit={handleSubmit}
-                className="border-t border-[#E7DFD4] pt-4 space-y-3.5"
+                className="space-y-5 border-t border-[#E7DFD4] pt-6"
+                autoComplete="off"
               >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#1a0f0b]">
-                  <User className="w-4 h-4 text-[#D98A45]" />
-                  <span>Form Data Pemesan</span>
+                <div className="flex items-center gap-2 text-lg font-bold text-[#1a0f0b]">
+                  <User className="h-5 w-5 text-[#9a5929]" />
+                  <span>4. Data pemesan</span>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#635e53] mb-1">
-                    Nama lengkap <span className="text-[#A8544E]">*</span>
+                  <label htmlFor="wizard-customer-name" className="mb-2 block text-base font-semibold text-[#1a0f0b]">
+                    Nama lengkap <span className="text-[#9a5929]">*</span>
                   </label>
                   <div className="relative">
                     <input
-                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-xs text-[#1a0f0b] outline-none"
+                      id="wizard-customer-name"
+                      className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white py-3 pl-11 pr-4 text-base text-[#1a0f0b] outline-none placeholder:text-[#746a61] focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
                       value={customerName}
                       onChange={(e) => {
                         setCustomerName(e.target.value);
                         setFormError("");
                       }}
-                      placeholder="Nama lengkap Anda"
-                      autoComplete="off"
+                      placeholder="Masukkan nama lengkap"
+                      autoComplete="name"
                       maxLength={120}
                       required
                     />
-                    <User className="w-4 h-4 text-[#635e53] absolute left-3 top-2.5" />
+                    <User className="absolute left-3 top-3.5 h-5 w-5 text-[#635e53]" aria-hidden="true" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#635e53] mb-1">
-                    Nomor WhatsApp aktif{" "}
-                    <span className="text-[#A8544E]">*</span>
+                  <label htmlFor="wizard-customer-phone" className="mb-2 block text-base font-semibold text-[#1a0f0b]">
+                    Nomor WhatsApp aktif <span className="text-[#9a5929]">*</span>
                   </label>
                   <div className="relative">
                     <input
-                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-xs text-[#1a0f0b] outline-none font-mono"
+                      id="wizard-customer-phone"
+                      className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white py-3 pl-11 pr-4 text-base text-[#1a0f0b] outline-none placeholder:text-[#746a61] focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
                       value={customerPhone}
                       onChange={(e) => {
                         setCustomerPhone(e.target.value);
                         setFormError("");
                       }}
-                      placeholder="Nomor WhatsApp Anda"
+                      placeholder="Contoh: 081234567890"
                       type="tel"
-                      autoComplete="off"
+                      autoComplete="tel"
                       maxLength={20}
                       required
                     />
-                    <Phone className="w-4 h-4 text-[#635e53] absolute left-3 top-2.5" />
+                    <Phone className="absolute left-3 top-3.5 h-5 w-5 text-[#635e53]" aria-hidden="true" />
                   </div>
+                  <p className="mt-1.5 text-sm leading-relaxed text-[#4f4542]">
+                    Konfirmasi reservasi akan dikirim melalui WhatsApp ini.
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#635e53] mb-1">
-                    Catatan Khusus (Opsional)
+                  <label htmlFor="wizard-notes" className="mb-2 block text-base font-semibold text-[#1a0f0b]">
+                    Catatan tambahan <span className="font-normal text-[#4f4542]">(opsional)</span>
                   </label>
                   <textarea
-                    className="w-full px-3 py-2 rounded-lg border border-[#E7DFD4] focus:border-[#D98A45] focus:ring-1 focus:ring-[#D98A45] text-xs text-[#1a0f0b] outline-none"
+                    id="wizard-notes"
+                    className="min-h-24 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none placeholder:text-[#746a61] focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Tulis permintaan khusus jika ada"
-                    rows={2}
+                    rows={3}
                   />
-                  <p className="mt-1 text-[10px] text-[#8a7d73]">
+                  <p className="mt-1.5 text-sm leading-relaxed text-[#4f4542]">
                     Opsional. Tinggalkan kosong jika tidak ada permintaan
                     khusus.
                   </p>
                 </div>
 
                 {/* Availability notice */}
-                <div className="p-3 rounded-lg bg-[#faebe2] border border-[#E7DFD4] text-[11px] text-[#635e53] flex items-start gap-2.5">
-                  <Clock className="w-4 h-4 text-[#D98A45] shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 rounded-xl border border-[#E7DFD4] bg-[#faebe2] p-4 text-sm leading-relaxed text-[#4f4542]">
+                  <Clock className="mt-0.5 h-5 w-5 shrink-0 text-[#9a5929]" />
                   <span>
                     Meja baru tercatat setelah pengajuan berhasil. Ketersediaan
                     dapat berubah jika ada pengajuan lain lebih dulu untuk
@@ -936,7 +933,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 {formError && (
                   <p
                     role="alert"
-                    className="rounded-lg bg-[#FBEEEE] px-3 py-2.5 text-xs text-[#A8544E]"
+                    className="rounded-xl border border-[#C56A64]/40 bg-[#FBEEEE] px-4 py-3 text-base leading-relaxed text-[#8f3f3b]"
                   >
                     {formError}
                   </p>
@@ -944,16 +941,16 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 rounded-lg bg-[#1a0f0b] hover:bg-[#30231f] disabled:cursor-wait disabled:opacity-60 text-white font-bold text-sm shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#1a0f0b] px-5 py-4 text-base font-bold text-white shadow-md transition-all hover:bg-[#30231f] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] active:scale-[0.99] disabled:cursor-wait disabled:opacity-60"
                 >
-                  <CheckCircle className="w-4 h-4 text-[#D98A45]" />
+                  <CheckCircle className="h-5 w-5 text-[#ffb77d]" />
                   <span>
                     {isSubmitting
                       ? "Mengirim pengajuan..."
                       : "Ajukan Reservasi"}
                   </span>
                 </button>
-                <p className="text-center text-[11px] leading-4 text-[#635e53]">
+                <p className="text-center text-sm leading-relaxed text-[#4f4542]">
                   WhatsApp akan terbuka dengan detail booking Anda. Tekan Kirim
                   di WhatsApp agar admin menerima pengajuan.
                 </p>
@@ -961,7 +958,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 <button
                   type="button"
                   onClick={onBack}
-                  className="w-full py-2 text-center text-xs text-[#635e53] hover:text-[#1a0f0b] font-medium transition-colors cursor-pointer"
+                  className="min-h-12 w-full rounded-lg py-3 text-center text-base font-semibold text-[#4f4542] underline-offset-4 transition-colors hover:text-[#1a0f0b] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929]"
                 >
                   ← Kembali ke Beranda
                 </button>
