@@ -38,38 +38,44 @@ import {
 } from './data/reservations';
 
 const getErrorMessage = (error: unknown, fallback: string) => {
+  let message = fallback;
   if (error instanceof Error) {
-    if (error.message.includes('BOOKING_DATE_MUST_BE_AT_LEAST_ONE_DAY_AHEAD')) {
-      return 'Reservasi harus dilakukan minimal satu hari sebelum tanggal kedatangan.';
-    }
-    return error.message;
+    message = error.message;
+  } else if (typeof error === 'string' && error.length > 0) {
+    message = error;
+  } else if (typeof error === 'object' && error !== null) {
+    const details = error as {
+      message?: unknown;
+      code?: unknown;
+      details?: unknown;
+      hint?: unknown;
+      status?: unknown;
+      statusText?: unknown;
+      name?: unknown;
+    };
+    const parts = [
+      details.message,
+      details.code,
+      details.details,
+      details.hint,
+      details.status,
+      details.statusText,
+    ].filter((part): part is string => typeof part === 'string' && part.length > 0);
+
+    message = parts.length > 0
+      ? parts.join('\n')
+      : typeof details.name === 'string'
+        ? `${details.name}: ${fallback}`
+        : fallback;
   }
-  if (typeof error === 'string' && error.length > 0) return error;
-  if (typeof error !== 'object' || error === null) return fallback;
 
-  const details = error as {
-    message?: unknown;
-    code?: unknown;
-    details?: unknown;
-    hint?: unknown;
-    status?: unknown;
-    statusText?: unknown;
-    name?: unknown;
-  };
-  const parts = [
-    details.message,
-    details.code,
-    details.details,
-    details.hint,
-    details.status,
-    details.statusText,
-  ].filter((part): part is string => typeof part === 'string' && part.length > 0);
-
-  return parts.length > 0
-    ? parts.join('\n')
-    : typeof details.name === 'string'
-      ? `${details.name}: ${fallback}`
-      : fallback;
+  if (message.includes('BOOKING_DATE_MUST_BE_AT_LEAST_ONE_DAY_AHEAD')) {
+    return 'Reservasi harus dilakukan minimal satu hari sebelum tanggal kedatangan.';
+  }
+  if (message.includes('DUPLICATE_CUSTOMER_BOOKING_DATE')) {
+    return 'Nomor WhatsApp ini sudah memiliki reservasi aktif pada tanggal tersebut. Gunakan tiket yang sudah ada atau pilih tanggal lain.';
+  }
+  return message;
 };
 
 export default function App() {

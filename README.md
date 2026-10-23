@@ -81,6 +81,17 @@ manual melalui SQL Editor Supabase sebelum menggunakan alur pembayaran ini.
 Migration memetakan booking lama berstatus `confirmed` menjadi menunggu
 pembayaran DP karena status pembayaran lamanya tidak tercatat.
 
+Booking ID baru memuat nama pelanggan, nomor WhatsApp, tanggal reservasi, dan
+kode acak pendek. Nomor WhatsApp yang sama tidak dapat membuat reservasi aktif
+lebih dari satu kali pada tanggal yang sama; reservasi yang dibatalkan tidak
+menghalangi pemesanan baru. Karena Booking ID memuat data pribadi, jangan
+membagikan tiket atau tangkapan layar kepada orang lain.
+
+Untuk menerapkan Booking ID baru dan pencegahan duplikasi, jalankan migration
+`supabase/migrations/20261028000000_use_customer_details_for_booking_id.sql`
+secara manual melalui SQL Editor Supabase setelah migration status DP dan
+perubahan pesanan terbaru.
+
 Untuk mengizinkan jumlah paket melebihi jumlah tamu, jalankan migration
 `supabase/migrations/20261027000000_allow_extra_packages_per_guest.sql`
 secara manual melalui SQL Editor Supabase. Migration memperbarui validasi
