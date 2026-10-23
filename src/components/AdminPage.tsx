@@ -292,7 +292,8 @@ export const AdminPage: React.FC = () => {
 
   const dailyOrderSummary = useMemo(() => {
     const activeBookings = dailyReservations.filter(
-      (booking) => booking.status !== "cancelled",
+      (booking) =>
+        booking.status !== "cancelled" && booking.status !== "awaiting_dp",
     );
     const items = new Map<
       string,
@@ -672,7 +673,8 @@ export const AdminPage: React.FC = () => {
             </div>
             <p className="mt-2 text-xs leading-5 text-[#8a7d73]">
               Jumlah paket dan add-on dari booking menunggu persetujuan atau
-              disetujui. Booking yang dibatalkan tidak masuk rekap.
+              sudah DP dibayar. Booking menunggu pembayaran DP dan booking
+              dibatalkan tidak masuk rekap.
             </p>
             {dailyOrderSummary.items.length > 0 ? (
               <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
