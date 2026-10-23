@@ -71,22 +71,31 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
     [packageSelections, packages],
   );
   const total = packageTotal + addonsTotal;
-  const updatePackageQuantity = (packageId: string, delta: number) => {
+  const updatePackageQuantity = (packageId: string, quantity: number) => {
     setPackageSelections((current) => {
-      const nextQuantity = (current[packageId] ?? 0) + delta;
-      if (nextQuantity < 0 || (delta > 0 && pax >= 12)) return current;
+      const currentQuantity = current[packageId] ?? 0;
+      const otherPax = Object.entries(current).reduce(
+        (total, [id, selectedQuantity]) =>
+          total + (id === packageId ? 0 : selectedQuantity),
+        0,
+      );
+      const nextQuantity = Math.min(
+        Math.max(0, Math.floor(quantity)),
+        Math.max(0, 12 - otherPax),
+      );
 
       const next = { ...current };
       if (nextQuantity === 0) delete next[packageId];
       else next[packageId] = nextQuantity;
+      if (nextQuantity === currentQuantity) return current;
       return next;
     });
     setFormError("");
   };
 
-  const updateAddonQuantity = (addonId: string, delta: number) => {
+  const updateAddonQuantity = (addonId: string, quantity: number) => {
     setSelectedAddons((current) => {
-      const nextQuantity = Math.max(0, (current[addonId] ?? 0) + delta);
+      const nextQuantity = Math.min(20, Math.max(0, Math.floor(quantity)));
       const next = { ...current };
       if (nextQuantity === 0) delete next[addonId];
       else next[addonId] = nextQuantity;
@@ -180,9 +189,12 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
                     <QuantityControl
                       label={item.name}
                       quantity={quantity}
+                      max={quantity + (12 - pax)}
                       canDecrease={quantity > 0}
                       canIncrease={pax < 12}
-                      onChange={(delta) => updatePackageQuantity(item.id, delta)}
+                      onChange={(nextQuantity) =>
+                        updatePackageQuantity(item.id, nextQuantity)
+                      }
                     />
                   </div>
                 );
@@ -195,9 +207,14 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
                 <QuantityControl
                   label="Paket A La Carte"
                   quantity={packageSelections[A_LA_CARTE_ID] ?? 0}
+                  max={
+                    (packageSelections[A_LA_CARTE_ID] ?? 0) + (12 - pax)
+                  }
                   canDecrease={(packageSelections[A_LA_CARTE_ID] ?? 0) > 0}
                   canIncrease={pax < 12}
-                  onChange={(delta) => updatePackageQuantity(A_LA_CARTE_ID, delta)}
+                  onChange={(nextQuantity) =>
+                    updatePackageQuantity(A_LA_CARTE_ID, nextQuantity)
+                  }
                 />
               </div>
             </div>
@@ -234,9 +251,12 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
                   <QuantityControl
                     label={item.name}
                     quantity={selectedAddons[item.id] ?? 0}
+                    max={20}
                     canDecrease={(selectedAddons[item.id] ?? 0) > 0}
                     canIncrease={(selectedAddons[item.id] ?? 0) < 20}
-                    onChange={(delta) => updateAddonQuantity(item.id, delta)}
+                    onChange={(nextQuantity) =>
+                      updateAddonQuantity(item.id, nextQuantity)
+                    }
                   />
                 </div>
               ))}
@@ -292,14 +312,16 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
 interface QuantityControlProps {
   label: string;
   quantity: number;
+  max: number;
   canDecrease: boolean;
   canIncrease: boolean;
-  onChange: (delta: number) => void;
+  onChange: (quantity: number) => void;
 }
 
 const QuantityControl: React.FC<QuantityControlProps> = ({
   label,
   quantity,
+  max,
   canDecrease,
   canIncrease,
   onChange,
@@ -309,19 +331,27 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
       type="button"
       aria-label={`Kurangi ${label}`}
       disabled={!canDecrease}
-      onClick={() => onChange(-1)}
+      onClick={() => onChange(quantity - 1)}
       className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#cfc4b7] text-[#1a0f0b] hover:bg-[#F8F5F0] disabled:cursor-not-allowed disabled:opacity-40"
     >
       <Minus className="h-4 w-4" />
     </button>
-    <span className="min-w-14 text-center text-sm font-bold text-[#1a0f0b]">
-      {quantity}
-    </span>
+    <input
+      type="number"
+      min={0}
+      max={max}
+      step={1}
+      inputMode="numeric"
+      aria-label={`Jumlah ${label}`}
+      value={quantity}
+      onChange={(event) => onChange(Number(event.target.value) || 0)}
+      className="h-10 w-16 rounded-lg border border-[#E7DFD4] bg-white text-center text-sm font-bold text-[#1a0f0b] outline-none focus:border-[#D98A45]"
+    />
     <button
       type="button"
       aria-label={`Tambah ${label}`}
       disabled={!canIncrease}
-      onClick={() => onChange(1)}
+      onClick={() => onChange(quantity + 1)}
       className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#9a5929] text-white hover:bg-[#78451f] disabled:cursor-not-allowed disabled:opacity-40"
     >
       <Plus className="h-4 w-4" />
