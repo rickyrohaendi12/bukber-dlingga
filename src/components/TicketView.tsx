@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { isReservationEditable } from "../data/reservations";
 import { EditReservationOrderModal } from "./EditReservationOrderModal";
+import qrisImage from "../img/qris.jpg";
 
 interface TicketViewProps {
   reservation: ReservationData;
@@ -81,6 +82,18 @@ export const TicketView: React.FC<TicketViewProps> = ({
 
   const waText = encodeURIComponent(
     `Halo Admin Bukber Lounge, saya sudah mengajukan reservasi dengan Booking ID #${reservation.bookingId} atas nama ${reservation.customerName} (Meja ${reservation.tableId}). Mohon bantuannya untuk verifikasi konfirmasi. Terima kasih!`,
+  );
+  const depositAmount = Math.ceil(reservation.totalAmount / 2);
+  const paymentProofMessage = encodeURIComponent(
+    [
+      `Halo Admin D'Lingga Coffee, saya ingin mengirim bukti pembayaran DP 50% untuk reservasi.`,
+      "",
+      `Booking ID: ${reservation.bookingId}`,
+      `Nama: ${reservation.customerName}`,
+      `Nominal DP: Rp${depositAmount.toLocaleString("id-ID")}`,
+      "",
+      "Saya lampirkan bukti pembayaran pada chat ini. Mohon konfirmasi setelah pembayaran diterima.",
+    ].join("\n"),
   );
 
   return (
@@ -362,12 +375,59 @@ export const TicketView: React.FC<TicketViewProps> = ({
                     </div>
                     <p className="text-[10px] text-[#635e53] mt-1 flex items-center gap-1">
                       <CreditCard className="w-3.5 h-3.5 text-[#71916B]" />
-                      Silahkan melakukan DP setelah konfirmasi WA.
+                      DP 50%: Rp{depositAmount.toLocaleString("id-ID")}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
+
+            {!isDpPaid && !isCancelled && (
+              <section className="mx-6 mb-6 rounded-2xl border border-[#E7DFD4] bg-white p-5 sm:mx-8 sm:p-6 print:hidden" aria-labelledby="deposit-payment-title">
+                <div className="text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9a5929]">
+                    Pembayaran reservasi
+                  </p>
+                  <h2 id="deposit-payment-title" className="mt-1 font-display text-xl font-extrabold text-[#1a0f0b]">
+                    DP 50% · Rp{depositAmount.toLocaleString("id-ID")}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-[#635e53]">
+                    Setelah melakukan pembayaran, kirim bukti transfer melalui
+                    WhatsApp dengan mencantumkan Booking ID{" "}
+                    <strong className="text-[#1a0f0b]">#{reservation.bookingId}</strong>.
+                  </p>
+                </div>
+                <img
+                  src={qrisImage}
+                  alt="Gambar QRIS pembayaran reservasi"
+                  className="mx-auto mt-5 max-h-72 w-full max-w-md rounded-xl border border-[#E7DFD4] object-contain"
+                />
+                <div role="alert" className="mt-4 flex items-start gap-2 rounded-xl border border-[#F0D8D6] bg-[#FBEEEE] p-3 text-left text-xs leading-5 text-[#8f3f3b]">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>
+                    QRIS yang tersedia saat ini masih berupa ilustrasi, bukan
+                    QR pembayaran merchant. Jangan pindai atau transfer
+                    menggunakan gambar ini. Pengelola harus mengganti{" "}
+                    <code>src/img/qris.jpg</code> dengan QRIS merchant yang
+                    valid sebelum pembayaran dibuka.
+                  </span>
+                </div>
+                <a
+                  href={`https://wa.me/6282129211422?text=${paymentProofMessage}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#20ba5a] focus:outline-none focus:ring-4 focus:ring-[#25D366]/20"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Kirim bukti pembayaran via WhatsApp
+                </a>
+                <p className="mt-2 text-center text-[11px] leading-4 text-[#635e53]">
+                  WhatsApp akan terbuka dengan detail reservasi. Lampirkan
+                  foto atau tangkapan layar bukti pembayaran di chat sebelum
+                  menekan Kirim.
+                </p>
+              </section>
+            )}
 
             {/* Physical Ticket Perforation Line with Side Notches */}
             <div className="relative my-0 flex items-center justify-between">
