@@ -1,30 +1,28 @@
 import React from "react";
-import { CalendarCheck, Clock3, ShieldCheck, Utensils } from "lucide-react";
+import { Ban, Banknote, CalendarCheck, CreditCard } from "lucide-react";
 
 const reservationRules = [
   {
+    icon: CreditCard,
+    title: "Ketentuan pembayaran DP",
+    description:
+      "Reservasi kurang dari 15 pax wajib melakukan pembayaran uang muka (DP) min. 30% ; apabila lebih dari 20 pax min. 50%",
+  },
+  {
+    icon: Banknote,
+    title: "Pelunasan sisa DP",
+    description: "Pembayaran sisa uang muka dapat dilakukan di tempat;",
+  },
+  {
     icon: CalendarCheck,
-    title: "Reservasi terkonfirmasi",
+    title: "Konfirmasi pesanan",
     description:
-      "Reservasi berlaku setelah menerima konfirmasi resmi atau e-tiket dari admin melalui WhatsApp.",
+      "Konfirmasi/fiksasi pesanan satu hari sebelumnya atau di hari H (tidak mendekati waktu buka puasa)",
   },
   {
-    icon: Clock3,
-    title: "Datang tepat waktu",
-    description:
-      "Mohon hadir 15 menit sebelum waktu yang dipilih. Toleransi keterlambatan tanpa konfirmasi adalah 20 menit.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Pembatalan & reschedule",
-    description:
-      "Refund penuh dapat diajukan maksimal H-1. Pembatalan pada hari-H dapat dikenai biaya operasional 50% dari DP. Reschedule mengikuti ketersediaan meja.",
-  },
-  {
-    icon: Utensils,
-    title: "Sajian halal",
-    description:
-      "Seluruh sajian dipersiapkan menggunakan bahan halal tersertifikasi.",
+    icon: Ban,
+    title: "Kebijakan pembatalan",
+    description: "Uang muka (DP) tidak dapat refund apabila canceled order.",
   },
 ];
 
