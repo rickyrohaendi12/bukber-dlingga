@@ -3,8 +3,6 @@ import { MenuItem, TableItem, ReservationData } from "../types/reservation";
 import {
   CheckCircle2,
   Clock,
-  MapPin,
-  ExternalLink,
   Calendar,
   Users,
   Phone,
@@ -13,7 +11,7 @@ import {
 } from "lucide-react";
 import {
   getSmallestSuitableTableCapacity,
-  getTodayDate,
+  getTomorrowDate,
   isTableCapacitySuitable,
 } from "../data/reservations";
 
@@ -45,7 +43,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
 }) => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(getTomorrowDate);
   const [timeSlot, setTimeSlot] = useState("");
   const [packageId, setPackageId] = useState("");
   const [pax, setPax] = useState<number | "">("");
@@ -65,6 +63,14 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
       ),
     [availableTables, recommendedCapacity],
   );
+
+  useEffect(() => {
+    if (date < getTomorrowDate()) {
+      const tomorrow = getTomorrowDate();
+      setDate(tomorrow);
+      onDateChange(tomorrow);
+    }
+  }, [date, onDateChange]);
 
   useEffect(() => {
     if (tableId && !capacitySuitableTables.some((table) => table.id === tableId)) {
@@ -112,14 +118,8 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
   };
 
   return (
-    <section
-      className="py-16 md:py-20 bg-[#F8F5F0] border-b border-[#E7DFD4]"
-      id="reservasi"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left: Form Reservasi (7 Cols) */}
-          <div className="lg:col-span-7 rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-sm sm:p-8">
+    <div id="reservasi">
+      <div className="rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-sm sm:p-8">
             <div className="mb-6 border-b border-[#E7DFD4] pb-5">
               <span className="mb-1 block text-sm font-bold uppercase tracking-wider text-[#9a5929]">
                 Reservasi Bukber
@@ -199,7 +199,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                     id="quick-booking-date"
                     className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
                     value={date}
-                    min={getTodayDate()}
+                    min={getTomorrowDate()}
                     onChange={(e) => {
                       setDate(e.target.value);
                       onDateChange(e.target.value);
@@ -383,104 +383,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                 Konfirmasi reservasi akan diteruskan ke WhatsApp Customer Service dalam waktu kurang dari 10 menit.
               </p>
             </form>
-          </div>
-
-          {/* Right: Jam Operasional & Lokasi Info (5 Cols) */}
-          <div className="lg:col-span-5 space-y-6" id="lokasi">
-            {/* Jam Operasional Card */}
-            <div className="bg-white rounded-2xl border border-[#E7DFD4] p-6 shadow-xs">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-[#faebe2] text-[#D98A45] flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-[#D98A45]" />
-                </div>
-                <div>
-                  <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
-                    Jam Operasional Iftar
-                  </h3>
-                  <p className="text-xs text-[#635e53]">
-                    Setiap Hari Selama Bulan Ramadan
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-3 border-t border-[#E7DFD4] pt-4 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-[#1a0f0b] font-medium">
-                    Sesi Open Gate
-                  </span>
-                  <span className="font-bold text-[#D98A45]">16.30 WIB</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[#1a0f0b] font-medium">
-                    Penyajian Takjil & Iftar
-                  </span>
-                  <span className="font-bold text-[#D98A45]">
-                    17.30 - 19.30 WIB
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[#1a0f0b] font-medium">
-                    Jam Tutup Kafe
-                  </span>
-                  <span className="font-bold text-[#635e53]">21.00 WIB</span>
-                </div>
-              </div>
-              <div className="mt-4 p-3 rounded-lg bg-[#F8F5F0] border border-[#E7DFD4] text-center">
-                <p className="text-xs text-[#635e53] leading-relaxed">
-                  Disarankan tiba{" "}
-                  <strong className="text-[#1a0f0b]">pukul 16.45 WIB</strong>{" "}
-                  agar hidangan tersaji tepat saat adzan Maghrib berkumandang.
-                </p>
-              </div>
-            </div>
-
-            {/* Peta & Lokasi Card */}
-            <div className="bg-white rounded-2xl border border-[#E7DFD4] p-6 shadow-xs">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-[#faebe2] text-[#D98A45] flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-[#D98A45]" />
-                </div>
-                <div>
-                  <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
-                    Lokasi & Parkir Luas
-                  </h3>
-                  <p className="text-xs text-[#635e53]">Akses jalan utama</p>
-                </div>
-              </div>
-              <p className="text-sm text-[#211a15] mb-3 leading-relaxed">
-                <strong className="text-[#1a0f0b]">
-                  Bukber D'Lingga Coffee
-                </strong>
-                <br />
-                33R8+66P, Hidden Gem (belakang SPPG Tarunajaya 2, Tarunajaya,
-                Kec. Darmaraja, Kabupaten Sumedang, Jawa Barat 45372
-              </p>
-              <div className="rounded-xl overflow-hidden border border-[#E7DFD4] relative h-44 bg-[#F8F5F0] group">
-                <iframe
-                  className="w-full h-full border-0"
-                  src="https://www.google.com/maps?q=-6.9094375,108.0655625&z=17&output=embed"
-                  title="Peta lokasi D'Lingga Coffee"
-                  loading="lazy"
-                />
-                <a
-                  className="absolute bottom-2.5 right-2.5 px-3 py-1.5 bg-[#1a0f0b] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-md hover:bg-[#30231f] transition-colors"
-                  href="https://maps.app.goo.gl/ozUJiHWcK6ww5cFNA"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Buka di Google Maps</span>
-                </a>
-              </div>
-              {/* <div className="mt-3 flex items-center gap-2 text-[#635e53] text-xs font-medium">
-                <Car className="w-4 h-4 text-[#71916B] shrink-0" />
-                <span>
-                  Kapasitas Parkir: 45 Mobil & 80 Sepeda Motor (Valet Tersedia)
-                </span>
-              </div> */}
-            </div>
-          </div>
-        </div>
       </div>
-    </section>
+    </div>
   );
 };

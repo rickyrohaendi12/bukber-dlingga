@@ -1,5 +1,5 @@
 import React from "react";
-import { AddonItem, MenuItem } from "../types/reservation";
+import { MenuItem } from "../types/reservation";
 import {
   Check,
   CheckCircle2,
@@ -9,10 +9,11 @@ import {
   ArrowRight,
   Calendar,
   Info,
-  Utensils,
 } from "lucide-react";
 
 const packageImages: Record<string, string> = {
+  "a-la-carte":
+    "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85",
   "paket-hemat":
     "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85",
   "paket-rame-rame":
@@ -23,19 +24,28 @@ const packageImages: Record<string, string> = {
 
 interface PackageSectionProps {
   packages: MenuItem[];
-  addons: AddonItem[];
   onSelectPackage: (packageId: string) => void;
-  onAddMenu: () => void;
-  onOpenDietaryModal?: () => void;
 }
 
 export const PackageSection: React.FC<PackageSectionProps> = ({
   packages,
-  addons,
   onSelectPackage,
-  onAddMenu,
-  onOpenDietaryModal,
 }) => {
+  const aLaCartePackage: MenuItem = {
+    id: "a-la-carte",
+    name: "Paket A La Carte",
+    category: "package",
+    price: 0,
+    description:
+      "Pilih minuman dan camilan sesuai selera. Total harga dihitung dari item yang dipesan.",
+    features: [
+      "Pilih item menu sesuai keinginan",
+      "Minuman segar dan camilan",
+      "Harga menyesuaikan pilihan",
+    ],
+  };
+  const displayedPackages = [...packages, aLaCartePackage];
+
   return (
     <section
       className="py-16 md:py-20 bg-white border-b border-[#E7DFD4]"
@@ -51,7 +61,7 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
             <span>Pilihan Menu Spesial Iftar</span>
           </div>
           <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a0f0b]">
-            Paket Bukber Ramadan 1446 H
+            Paket Bukber Ramadan
           </h2>
           <p className="text-sm sm:text-base text-[#635e53] mt-2 leading-relaxed">
             Disajikan secara higienis, segar, dan tepat waktu menjelang adzan
@@ -59,11 +69,12 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
           </p>
         </div>
 
-        {/* 3 Cards Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-          {packages.map((pkg) => {
+        {/* Package Cards */}
+        <div className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {displayedPackages.map((pkg) => {
             const isPopular = pkg.isPopular;
             const isVip = pkg.isVip;
+            const isALaCarte = pkg.id === "a-la-carte";
 
             return (
               <div
@@ -128,12 +139,22 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
 
                     {/* Pricing */}
                     <div className="my-5 pb-5 border-b border-[#E7DFD4]">
-                      <span className="text-xs text-[#635e53]">Mulai dari</span>
+                      <span className="text-xs text-[#635e53]">
+                        {isALaCarte ? "Harga" : "Mulai dari"}
+                      </span>
                       <div className="flex items-baseline gap-1 mt-0.5">
-                        <span className="font-display text-2xl sm:text-3xl font-extrabold text-[#1a0f0b]">
-                          Rp{pkg.price.toLocaleString("id-ID")}
-                        </span>
-                        <span className="text-xs text-[#635e53]">/ orang</span>
+                        {isALaCarte ? (
+                          <span className="font-display text-xl font-extrabold text-[#1a0f0b] sm:text-2xl">
+                            Sesuai pilihan
+                          </span>
+                        ) : (
+                          <>
+                            <span className="font-display text-2xl font-extrabold text-[#1a0f0b] sm:text-3xl">
+                              Rp{pkg.price.toLocaleString("id-ID")}
+                            </span>
+                            <span className="text-xs text-[#635e53]">/ orang</span>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -175,7 +196,7 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
                           : "bg-[#faebe2] hover:bg-[#e7dfd1] text-[#1a0f0b] border border-[#E7DFD4]"
                     }`}
                   >
-                    <span>Pilih Paket & Jadwal</span>
+                    <span>{isALaCarte ? "Pilih Menu & Jadwal" : "Pilih Paket & Jadwal"}</span>
                     {isPopular ? (
                       <Calendar className="w-4 h-4" />
                     ) : (
@@ -186,66 +207,6 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
               </div>
             );
           })}
-        </div>
-
-        {/* Add-on Menu Catalog */}
-        <div className="mt-16">
-          <div className="text-center max-w-2xl mx-auto mb-8">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#faebe2] text-[#D98A45] text-xs font-semibold mb-2">
-              <Utensils className="w-3.5 h-3.5" />
-              <span>Menu Tambahan</span>
-            </div>
-            <h3 className="font-display text-xl sm:text-2xl font-bold text-[#1a0f0b]">
-              Lengkapi Momen Berbuka
-            </h3>
-            <p className="text-sm text-[#635e53] mt-2 leading-relaxed">
-              Ada minuman dan camilan lain yang tersedia untuk dipesan sebagai
-              tambahan. Pilih jumlahnya di bagian menu opsional saat mengisi
-              reservasi.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {addons.map((addon) => (
-              <div
-                key={addon.id}
-                className="rounded-xl border border-[#E7DFD4] bg-[#F8F5F0] p-5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <span className="inline-flex px-2 py-1 rounded-full bg-white text-[#635e53] text-[10px] font-semibold border border-[#E7DFD4]">
-                      {addon.category}
-                    </span>
-                    <h4 className="font-display text-base font-bold text-[#1a0f0b] mt-2">
-                      {addon.name}
-                    </h4>
-                  </div>
-                  <Utensils className="w-5 h-5 text-[#D98A45] shrink-0 mt-1" />
-                </div>
-                <p className="text-xs text-[#635e53] mt-2 leading-relaxed">
-                  {addon.description}
-                </p>
-                <p className="text-sm font-bold text-[#D98A45] mt-4">
-                  Rp{addon.price.toLocaleString("id-ID")}
-                  <span className="text-xs text-[#635e53] font-normal">
-                    {" "}
-                    / {addon.unit || "item"}
-                  </span>
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-6">
-            <button
-              type="button"
-              onClick={onAddMenu}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#30231f] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1a0f0b] cursor-pointer"
-            >
-              Pesan dan pilih menu tambahan
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
         </div>
 
         {/* Note for Special Dietary/Allergies */}

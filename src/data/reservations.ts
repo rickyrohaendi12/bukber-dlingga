@@ -38,14 +38,19 @@ const mapReservation = (row: ReservationRow): ReservationData => ({
   status: row.status,
   createdAt: row.created_at,
   subtotal: row.subtotal,
-  taxAmount: row.tax_amount,
-  totalAmount: row.total_amount,
+  taxAmount: 0,
+  totalAmount: row.subtotal,
 });
 
 export const getTodayDate = () => {
   const today = new Date();
   const offset = today.getTimezoneOffset();
   return new Date(today.getTime() - offset * 60_000).toISOString().slice(0, 10);
+};
+
+export const getTomorrowDate = () => {
+  const [year, month, day] = getTodayDate().split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10);
 };
 
 export const getReservations = async () => {
@@ -91,6 +96,24 @@ export const createReservation = async (
   return mapReservation(data as ReservationRow);
 };
 
+export const updateReservationOrder = async (
+  bookingId: string,
+  phone: string,
+  packageSelections: Record<string, number>,
+  addons: Record<string, number>,
+) => {
+  const { data, error } = await requireSupabase().rpc('update_reservation_order', {
+    p_booking_id: bookingId,
+    p_phone: phone,
+    p_package_selections: packageSelections,
+    p_addons: addons,
+  });
+
+  if (error) throw error;
+  if (!data) throw new Error('Supabase tidak mengembalikan data booking yang diperbarui.');
+  return mapReservation(data as ReservationRow);
+};
+
 export const lookupReservation = async (bookingId: string, phone: string) => {
   const { data, error } = await requireSupabase().rpc('lookup_reservation', {
     p_booking_id: bookingId,
@@ -100,6 +123,28 @@ export const lookupReservation = async (bookingId: string, phone: string) => {
   if (error) throw error;
   const rows = data as ReservationRow[];
   return rows.length > 0 ? mapReservation(rows[0]) : null;
+};
+
+export const isReservationEditable = (
+  reservation: ReservationData,
+  now = new Date(),
+) => {
+  if (reservation.status === 'cancelled') return false;
+
+  const localParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(now);
+  const parts = Object.fromEntries(localParts.map(({ type, value }) => [type, value]));
+  const jakartaDate = `${parts.year}-${parts.month}-${parts.day}`;
+
+  return reservation.date > jakartaDate ||
+    (reservation.date === jakartaDate && Number(parts.hour) < 12);
 };
 
 export const updateReservationStatus = async (

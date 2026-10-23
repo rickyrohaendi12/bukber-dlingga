@@ -98,6 +98,7 @@ export const AdminPage: React.FC = () => {
   const [loadError, setLoadError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<BookingFilter>("all");
+  const [dailyDate, setDailyDate] = useState("");
   const [search, setSearch] = useState("");
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
     null,
@@ -220,9 +221,17 @@ export const AdminPage: React.FC = () => {
     [reservations],
   );
 
+  const dailyReservations = useMemo(
+    () =>
+      dailyDate
+        ? sortedReservations.filter((booking) => booking.date === dailyDate)
+        : sortedReservations,
+    [dailyDate, sortedReservations],
+  );
+
   const filteredReservations = useMemo(() => {
     const query = search.trim().toLocaleLowerCase("id-ID");
-    return sortedReservations.filter((booking) => {
+    return dailyReservations.filter((booking) => {
       const matchesFilter = filter === "all" || booking.status === filter;
       const matchesSearch =
         !query ||
@@ -232,7 +241,7 @@ export const AdminPage: React.FC = () => {
           .includes(query);
       return matchesFilter && matchesSearch;
     });
-  }, [filter, search, sortedReservations]);
+  }, [dailyReservations, filter, search]);
 
   const selectedBooking =
     filteredReservations.find(
@@ -241,18 +250,78 @@ export const AdminPage: React.FC = () => {
 
   const counts = useMemo(
     () => ({
-      all: reservations.length,
-      pending: reservations.filter((booking) => booking.status === "pending")
+      all: dailyReservations.length,
+      pending: dailyReservations.filter((booking) => booking.status === "pending")
         .length,
-      confirmed: reservations.filter(
+      confirmed: dailyReservations.filter(
         (booking) => booking.status === "confirmed",
       ).length,
-      cancelled: reservations.filter(
+      cancelled: dailyReservations.filter(
         (booking) => booking.status === "cancelled",
       ).length,
     }),
-    [reservations],
+    [dailyReservations],
   );
+
+  const dailyOrderSummary = useMemo(() => {
+    const activeBookings = dailyReservations.filter(
+      (booking) => booking.status !== "cancelled",
+    );
+    const items = new Map<
+      string,
+      { id: string; name: string; quantity: number; unit: string }
+    >();
+
+    const addItem = (id: string, name: string, quantity: number, unit: string) => {
+      const existing = items.get(id);
+      items.set(id, {
+        id,
+        name,
+        quantity: (existing?.quantity ?? 0) + quantity,
+        unit,
+      });
+    };
+
+    activeBookings.forEach((booking) => {
+      Object.entries(booking.packageSelections).forEach(
+        ([packageId, quantity]) => {
+          const menuPackage = MENU_PACKAGES.find(
+            (item) => item.id === packageId,
+          );
+          addItem(
+            `package:${packageId}`,
+            menuPackage?.name ?? packageId,
+            quantity,
+            "orang",
+          );
+        },
+      );
+      Object.entries(booking.addons).forEach(([addonId, quantity]) => {
+        const addon = ADDON_ITEMS.find((item) => item.id === addonId);
+        addItem(
+          `addon:${addonId}`,
+          addon?.name ?? addonId,
+          quantity,
+          addon?.unit ?? "item",
+        );
+      });
+    });
+
+    return {
+      bookingCount: activeBookings.length,
+      guestCount: activeBookings.reduce((total, booking) => total + booking.pax, 0),
+      items: Array.from(items.values()).sort((a, b) =>
+        a.name.localeCompare(b.name, "id-ID"),
+      ),
+    };
+  }, [dailyReservations]);
+
+  const dailyDateLabel = dailyDate ? formatDate(dailyDate) : "Semua tanggal";
+
+  const handleDailyDateChange = (date: string) => {
+    setDailyDate(date);
+    setSelectedBookingId(null);
+  };
 
   const approveBooking = async (bookingId: string) => {
     const booking = reservations.find(
@@ -433,8 +502,8 @@ export const AdminPage: React.FC = () => {
             Daftar booking
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#635e53]">
-            Tinjau pengajuan, cek pilihan menu setiap tamu, lalu setujui booking
-            yang siap diproses.
+            Pilih tanggal untuk melihat seluruh booking dan rekap menu yang
+            perlu disiapkan pada hari tersebut.
           </p>
           <button
             type="button"
@@ -449,6 +518,34 @@ export const AdminPage: React.FC = () => {
             Gagal memuat atau memperbarui data Supabase: {loadError}
           </div>
         )}
+
+        <section className="mb-6 flex flex-wrap items-end gap-3 rounded-2xl border border-[#E7DFD4] bg-white p-4 shadow-sm sm:p-5" aria-label="Filter tanggal booking">
+          <label className="flex min-w-[220px] flex-1 flex-col gap-1.5 text-xs font-semibold text-[#635e53]">
+            Tampilkan pesanan tanggal
+            <span className="flex items-center gap-2 rounded-xl border border-[#E7DFD4] bg-[#fffdfa] px-3.5 py-2.5 focus-within:border-[#D98A45]">
+              <CalendarDays className="h-4 w-4 shrink-0 text-[#D98A45]" />
+              <input
+                type="date"
+                value={dailyDate}
+                onChange={(event) => handleDailyDateChange(event.target.value)}
+                className="w-full bg-transparent text-sm text-[#211a15] outline-none"
+              />
+            </span>
+          </label>
+          <button
+            type="button"
+            onClick={() => handleDailyDateChange("")}
+            disabled={!dailyDate}
+            className="rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#F8F5F0] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Semua tanggal
+          </button>
+          <p className="w-full text-xs text-[#8a7d73]">
+            {dailyDate
+              ? `Menampilkan booking untuk ${dailyDateLabel}.`
+              : "Pilih tanggal untuk melihat rekap menu dan semua booking pada hari itu."}
+          </p>
+        </section>
 
         <section
           className="mb-7 grid grid-cols-2 gap-3 lg:grid-cols-4"
@@ -511,13 +608,57 @@ export const AdminPage: React.FC = () => {
           ))}
         </section>
 
+        {dailyDate && (
+          <section className="mb-7 rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-sm sm:p-6" aria-label="Rekap pesanan harian">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#D98A45]">
+                  Rekap pesanan harian
+                </p>
+                <h2 className="mt-1 font-display text-xl font-extrabold text-[#1a0f0b]">
+                  {dailyDateLabel}
+                </h2>
+              </div>
+              <p className="rounded-xl bg-[#F8F5F0] px-3 py-2 text-xs font-semibold text-[#635e53]">
+                {dailyOrderSummary.bookingCount} booking aktif ·{" "}
+                {dailyOrderSummary.guestCount} tamu
+              </p>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-[#8a7d73]">
+              Jumlah paket dan add-on dari booking menunggu persetujuan atau
+              disetujui. Booking yang dibatalkan tidak masuk rekap.
+            </p>
+            {dailyOrderSummary.items.length > 0 ? (
+              <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {dailyOrderSummary.items.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-[#F0EAE4] bg-[#fffdfa] px-4 py-3"
+                  >
+                    <span className="text-sm font-medium text-[#4f4542]">
+                      {item.name}
+                    </span>
+                    <span className="shrink-0 rounded-lg bg-[#FFF4E7] px-2.5 py-1 text-xs font-bold text-[#9a5b25]">
+                      {item.quantity} {item.unit}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-4 rounded-xl bg-[#F8F5F0] p-4 text-sm text-[#635e53]">
+                Belum ada booking aktif pada tanggal ini.
+              </p>
+            )}
+          </section>
+        )}
+
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <section className="overflow-hidden rounded-2xl border border-[#E7DFD4] bg-white shadow-sm">
             <div className="border-b border-[#E7DFD4] p-4 sm:p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                   <h2 className="font-display text-lg font-bold text-[#1a0f0b]">
-                    Booking masuk
+                    {dailyDate ? "Booking harian" : "Booking masuk"}
                   </h2>
                   <p className="mt-0.5 text-xs text-[#635e53]">
                     {filteredReservations.length} booking ditampilkan
@@ -570,7 +711,7 @@ export const AdminPage: React.FC = () => {
                     Booking tidak ditemukan
                   </p>
                   <p className="mt-1 text-sm text-[#635e53]">
-                    Ubah kata kunci atau filter status.
+                    Ubah tanggal, kata kunci, atau filter status.
                   </p>
                 </div>
               ) : (
@@ -781,11 +922,6 @@ export const AdminPage: React.FC = () => {
                 )}
 
                 <div className="space-y-2 border-t border-[#F0EAE4] pt-4">
-                  <PriceRow
-                    label="Subtotal"
-                    amount={selectedBooking.subtotal}
-                  />
-                  <PriceRow label="Pajak" amount={selectedBooking.taxAmount} />
                   <div className="flex items-center justify-between border-t border-[#F0EAE4] pt-3">
                     <span className="font-bold text-[#1a0f0b]">
                       Total tagihan

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ReservationData,
   MenuItem,
@@ -17,7 +17,10 @@ import {
   AlertCircle,
   User,
   CreditCard,
+  Pencil,
 } from "lucide-react";
+import { isReservationEditable } from "../data/reservations";
+import { EditReservationOrderModal } from "./EditReservationOrderModal";
 
 interface TicketViewProps {
   reservation: ReservationData;
@@ -25,6 +28,10 @@ interface TicketViewProps {
   addons: AddonItem[];
   tables: TableItem[];
   onBackToHome: () => void;
+  onUpdateReservation: (
+    packageSelections: Record<string, number>,
+    addons: Record<string, number>,
+  ) => Promise<ReservationData>;
 }
 
 export const TicketView: React.FC<TicketViewProps> = ({
@@ -33,7 +40,9 @@ export const TicketView: React.FC<TicketViewProps> = ({
   addons,
   tables,
   onBackToHome,
+  onUpdateReservation,
 }) => {
+  const [isEditOrderOpen, setIsEditOrderOpen] = useState(false);
   const selectedPackageItems = Object.entries(reservation.packageSelections).map(
     ([packageId, quantity]) => ({
       item: packages.find((menuPackage) => menuPackage.id === packageId),
@@ -326,13 +335,6 @@ export const TicketView: React.FC<TicketViewProps> = ({
                         },
                       )}
 
-                      {/* Tax */}
-                      <div className="flex justify-between items-center text-[11px] text-[#635e53] border-t border-[#E7DFD4] pt-2">
-                        <span>Pajak Resto & Servis (10%)</span>
-                        <span>
-                          Rp{reservation.taxAmount.toLocaleString("id-ID")}
-                        </span>
-                      </div>
                     </div>
                   </div>
 
@@ -376,6 +378,16 @@ export const TicketView: React.FC<TicketViewProps> = ({
 
         {/* Call to Actions Cluster (Print hidden) */}
         <div className="max-w-xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-16 print:hidden">
+          {isReservationEditable(reservation) && (
+            <button
+              type="button"
+              onClick={() => setIsEditOrderOpen(true)}
+              className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#9a5929] hover:bg-[#78451f] text-white font-bold text-sm shadow-md transition-all active:scale-98"
+            >
+              <Pencil className="h-4 w-4" />
+              <span>Ubah Pesanan</span>
+            </button>
+          )}
           {/* Primary Action: WhatsApp Admin Instant Confirmation */}
           <a
             href={`https://wa.me/6282129211422?text=${waText}`}
@@ -396,6 +408,16 @@ export const TicketView: React.FC<TicketViewProps> = ({
             <span>Kembali ke Beranda</span>
           </button>
         </div>
+
+        {isEditOrderOpen && (
+          <EditReservationOrderModal
+            reservation={reservation}
+            packages={packages}
+            addons={addons}
+            onClose={() => setIsEditOrderOpen(false)}
+            onSave={onUpdateReservation}
+          />
+        )}
 
         {/* Section FAQ Singkat Bukber Lounge */}
         <section className="max-w-3xl mx-auto border-t border-[#E7DFD4] pt-10 print:hidden">

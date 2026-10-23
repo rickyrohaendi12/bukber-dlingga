@@ -22,11 +22,13 @@ reservasi hanya tersedia untuk akun Supabase yang memiliki role admin di
 
 Di wizard booking, pelanggan dapat membagi tamu ke beberapa pilihan menu dalam
 satu reservasi, misalnya 1 Paket Hemat, 2 Paket Premium Sultan, dan 1 A la
-Carte. Jumlah alokasi harus sama dengan jumlah tamu. A la Carte tidak memiliki
-harga dasar paket, jadi pilih setidaknya satu item minuman/camilan untuk
-reservasi yang memakainya. Setiap paket boleh dipilih mulai dari satu orang;
-jumlah minimum reservasi keseluruhan tetap dua tamu. Harga paket, add-on, dan
-pajak dihitung ulang di database.
+Carte. Jumlah alokasi harus sama dengan jumlah tamu. A la Carte tidak memiliki harga
+dasar paket dan item minuman/camilan tambahan bersifat opsional. Setiap paket
+boleh dipilih mulai dari satu orang; jumlah minimum reservasi keseluruhan tetap
+dua tamu. Harga paket dan add-on dihitung ulang di database.
+
+Reservasi hanya dapat dibuat mulai satu hari sebelum tanggal kedatangan.
+Formulir dan validasi database menggunakan waktu lokal Jakarta untuk aturan ini.
 
 Jika project sudah menjalankan migration versi sebelumnya, jalankan kembali
 seluruh isi file migration terbaru yang sama di SQL Editor. Migration ini

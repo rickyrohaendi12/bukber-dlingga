@@ -1,14 +1,13 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   TableItem,
   MenuItem,
   AddonItem,
   ReservationData,
 } from "../types/reservation";
-import { FloorPlan } from "./FloorPlan";
 import {
   getSmallestSuitableTableCapacity,
-  getTodayDate,
+  getTomorrowDate,
   isTableCapacitySuitable,
 } from "../data/reservations";
 import {
@@ -72,6 +71,15 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (date < getTomorrowDate()) {
+      const tomorrow = getTomorrowDate();
+      setDate(tomorrow);
+      onDateChange(tomorrow);
+      setSelectedTableId("");
+    }
+  }, [date, onDateChange]);
+
   // Find selected objects
   const assignedPax = Object.values(packageSelections).reduce(
     (total, quantity) => total + quantity,
@@ -88,11 +96,21 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const capacitySuitableTables = useMemo(
     () =>
       recommendedCapacity
-        ? tables.filter((table) => table.seats === recommendedCapacity)
-        : tables,
+        ? tables.filter(
+            (table) =>
+              table.status === "available" &&
+              table.seats === recommendedCapacity,
+          )
+        : [],
     [recommendedCapacity, tables],
   );
   const selectedTable = tables.find((table) => table.id === selectedTableId);
+
+  useEffect(() => {
+    if (!capacitySuitableTables.some((table) => table.id === selectedTableId)) {
+      setSelectedTableId("");
+    }
+  }, [capacitySuitableTables, selectedTableId]);
 
   const handlePaxChange = (nextPax: number) => {
     const adjustedPax = Math.min(12, Math.max(2, assignedPax, nextPax));
@@ -119,8 +137,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   );
 
   const subtotal = packageTotal + addonsTotal;
-  const taxAmount = Math.round(subtotal * 0.1);
-  const totalAmount = subtotal + taxAmount;
+  const taxAmount = 0;
+  const totalAmount = subtotal;
 
   const handlePackageQty = (packageId: string, delta: number) => {
     setPackageSelections((current) => {
@@ -172,12 +190,6 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     if (assignedPax !== pax) {
       setFormError(
         `Atur pilihan menu untuk semua tamu. Saat ini ${assignedPax} dari ${pax} tamu sudah mendapat pilihan.`,
-      );
-      return;
-    }
-    if (packageSelections["a-la-carte"] && addonsTotal === 0) {
-      setFormError(
-        "Tambahkan minimal satu item A la Carte untuk tamu yang memilih menu tersebut.",
       );
       return;
     }
@@ -240,8 +252,6 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
         "Menu tambahan:",
         ...(orderedAddons.length > 0 ? orderedAddons : ["- Tidak ada"]),
         `Catatan: ${notes.trim() || "-"}`,
-        `Subtotal: ${formatPrice(subtotal)}`,
-        `Pajak: ${formatPrice(taxAmount)}`,
         `Total: ${formatPrice(totalAmount)}`,
         "",
         "Mohon segera tinjau dan konfirmasi booking ini. Terima kasih.",
@@ -302,8 +312,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 STEP 2 • MENU
               </p>
               <p className="text-xs font-semibold text-[#1a0f0b] truncate">
-                {selectedPackageItems.length > 0
-                  ? `${selectedPackageItems.length} pilihan menu`
+                {selectedPackageItems.length + (packageSelections["a-la-carte"] ? 1 : 0) > 0
+                  ? `${selectedPackageItems.length + (packageSelections["a-la-carte"] ? 1 : 0)} pilihan menu`
                   : "Belum memilih menu"}
               </p>
             </div>
@@ -364,7 +374,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     id="wizard-date"
                     type="date"
                     value={date}
-                    min={getTodayDate()}
+                    min={getTomorrowDate()}
                     onChange={(event) => {
                       setDate(event.target.value);
                       onDateChange(event.target.value);
@@ -438,41 +448,48 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
               </fieldset>
             </div>
 
-            {/* Interactive Floor Plan Selector */}
+            {/* Table Selection */}
             <div className="rounded-2xl border border-[#E7DFD4] bg-white p-5 shadow-sm sm:p-6">
-              <div className="mb-4 flex flex-col gap-3 border-b border-[#E7DFD4] pb-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
-                    2. Pilih meja di denah
-                  </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
-                    Pilih meja tersedia dengan kapasitas paling kecil yang cukup untuk {pax} orang.
-                  </p>
-                </div>
-                {/* Legend Mini */}
-                <div className="flex flex-wrap gap-3 text-sm">
-                  <span className="flex items-center gap-2 text-[#4f4542]">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#71916B]" />{" "}
-                    Tersedia
-                  </span>
-                  <span className="flex items-center gap-2 text-[#4f4542]">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#D98A45]" />{" "}
-                    Reserved
-                  </span>
-                  <span className="flex items-center gap-2 text-[#4f4542]">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#C56A64]" />{" "}
-                    Penuh
-                  </span>
-                </div>
+              <div className="mb-4 border-b border-[#E7DFD4] pb-4">
+                <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
+                  2. Pilih meja
+                </h3>
+                <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
+                  Pilih meja tersedia dengan kapasitas paling kecil yang cukup untuk {pax} orang.
+                </p>
               </div>
 
-              {/* Floor Plan Render */}
-              <FloorPlan
-                tables={capacitySuitableTables}
-                selectedTableId={selectedTableId}
-                onSelectTable={(table) => setSelectedTableId(table.id)}
-                interactive={true}
-              />
+              <label
+                htmlFor="wizard-table-selection"
+                className="mb-2 block text-base font-semibold text-[#1a0f0b]"
+              >
+                Meja tersedia <span className="text-[#9a5929]">*</span>
+              </label>
+              <select
+                id="wizard-table-selection"
+                value={selectedTableId}
+                onChange={(event) => {
+                  setSelectedTableId(event.target.value);
+                  setFormError("");
+                }}
+                required
+                disabled={capacitySuitableTables.length === 0}
+                className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#F8F5F0] disabled:text-[#635e53]"
+              >
+                <option value="" disabled>
+                  {capacitySuitableTables.length === 0
+                    ? `Tidak ada meja tersedia untuk ${pax} orang`
+                    : "Pilih meja yang tersedia"}
+                </option>
+                {capacitySuitableTables.map((table) => (
+                  <option key={table.id} value={table.id}>
+                    {table.name} - {table.zoneName} ({table.seats} kursi)
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-sm leading-relaxed text-[#4f4542]">
+                Pilihan menampilkan meja yang tersedia dan sesuai kapasitas.
+              </p>
               {!recommendedCapacity && (
                 <p className="mt-3 rounded-lg bg-[#FBEEEE] p-3 text-xs text-[#A8544E]">
                   Tidak tersedia meja yang cukup untuk {pax} orang.
@@ -502,7 +519,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   </div>
                 ) : (
                   <p className="text-center text-base font-medium leading-relaxed text-[#4f4542]">
-                    Pilih meja yang tersedia pada denah untuk melanjutkan.
+                    Pilih meja pada daftar untuk melanjutkan.
                   </p>
                 )}
               </div>
@@ -592,7 +609,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 >
                   <span className="flex items-start justify-between gap-2">
                     <span className="text-base font-bold text-[#1a0f0b]">
-                      A la Carte
+                      Paket A La Carte
                     </span>
                     <span className="text-xs font-semibold text-[#D98A45]">
                       Pilih item menu
@@ -637,13 +654,11 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     3. Tambahan minuman dan camilan
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
-                    {packageSelections["a-la-carte"]
-                      ? "Wajib pilih setidaknya satu item untuk menu A la Carte."
-                      : "Tambahan langsung disajikan hangat saat menjelang berbuka."}
+                    "Pilih minuman atau camilan tambahan jika diinginkan."
                   </p>
                 </div>
                 <span className="w-fit rounded-full bg-[#faebe2] px-3 py-1.5 text-sm font-semibold text-[#8c4d20]">
-                  {packageSelections["a-la-carte"] ? "Wajib" : "Opsional"}
+                  Opsional
                 </span>
               </div>
 
@@ -767,18 +782,23 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   {Object.entries(packageSelections).map(([id, quantity]) => {
                     const item = packages.find((menuPackage) => menuPackage.id === id);
                     const unitPrice = item?.price ?? 0;
-                    const label = item?.name ?? "A la Carte";
+                    const isALaCarte = id === "a-la-carte";
+                    const label = item?.name ?? "Paket A La Carte";
                     return (
                       <div key={id} className="flex justify-between items-start">
                         <div>
                           <p className="font-bold text-[#1a0f0b]">{label}</p>
                           <p className="text-[11px] text-[#635e53]">
-                            {quantity} orang × Rp{unitPrice.toLocaleString("id-ID")}
+                            {isALaCarte
+                              ? `${quantity} orang · harga sesuai item tambahan`
+                              : `${quantity} orang × Rp${unitPrice.toLocaleString("id-ID")}`}
                           </p>
                         </div>
-                        <span className="font-bold text-[#1a0f0b]">
-                          Rp{(unitPrice * quantity).toLocaleString("id-ID")}
-                        </span>
+                        {!isALaCarte && (
+                          <span className="font-bold text-[#1a0f0b]">
+                            Rp{(unitPrice * quantity).toLocaleString("id-ID")}
+                          </span>
+                        )}
                       </div>
                     );
                   })}
@@ -806,22 +826,6 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       </div>
                     );
                   })}
-
-                  {/* Subtotal & Tax */}
-                  <div className="border-t border-[#E7DFD4] pt-3 space-y-1.5">
-                    <div className="flex justify-between text-[#635e53]">
-                      <span>Subtotal Menu</span>
-                      <span className="font-medium text-[#1a0f0b]">
-                        Rp{subtotal.toLocaleString("id-ID")}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[#635e53]">
-                      <span>Pajak Restoran & Service (10%)</span>
-                      <span className="font-medium text-[#1a0f0b]">
-                        Rp{taxAmount.toLocaleString("id-ID")}
-                      </span>
-                    </div>
-                  </div>
 
                   {/* Total Estimasi */}
                   <div className="border-t border-dashed border-[#E7DFD4] pt-3">

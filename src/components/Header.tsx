@@ -4,9 +4,9 @@ import dlinggaLogo from "../img/dlingga.jpg";
 
 const NAV_SECTIONS = [
   { id: "paket", label: "Paket Bukber" },
+  { id: "lokasi", label: "Lokasi & Jam" },
   { id: "fasilitas", label: "Fasilitas Ibadah" },
   { id: "denah", label: "Denah Meja" },
-  { id: "lokasi", label: "Lokasi & Jam" },
 ] as const;
 
 interface HeaderProps {

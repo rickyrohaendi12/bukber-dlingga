@@ -5,9 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  TableItem,
   MenuItem,
-  AddonItem,
   ReservationData,
 } from './types/reservation';
 import {
@@ -18,25 +16,34 @@ import {
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { PackageSection } from './components/PackageSection';
+import { RulesSection } from './components/RulesSection';
 import { FacilitiesBento } from './components/FacilitiesBento';
-import { FloorPlan } from './components/FloorPlan';
 import { QuickBookingForm } from './components/QuickBookingForm';
+import { LocationSection } from './components/LocationSection';
 import { BookingWizard } from './components/BookingWizard';
 import { TicketView } from './components/TicketView';
 import { CheckTicketModal } from './components/CheckTicketModal';
 import { Footer } from './components/Footer';
-import { Calendar, Armchair } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
+import { Armchair, MapPin } from 'lucide-react';
 import { AdminPage } from './components/AdminPage';
+import floorPlanFloor1Image from './img/denah lt 1.jpeg';
+import floorPlanFloor2Image from './img/denah lt 2.png';
 import {
   getBookedTableIds,
   createReservation,
-  getTodayDate,
+  getTomorrowDate,
   isTableCapacitySuitable,
+  updateReservationOrder,
 } from './data/reservations';
 
 const getErrorMessage = (error: unknown, fallback: string) => {
-  if (error instanceof Error) return error.message;
+  if (error instanceof Error) {
+    if (error.message.includes('BOOKING_DATE_MUST_BE_AT_LEAST_ONE_DAY_AHEAD')) {
+      return 'Reservasi harus dilakukan minimal satu hari sebelum tanggal kedatangan.';
+    }
+    return error.message;
+  }
   if (typeof error === 'string' && error.length > 0) return error;
   if (typeof error !== 'object' || error === null) return fallback;
 
@@ -79,7 +86,7 @@ function PublicApp() {
   // Navigation / View State
   const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'ticket'>('landing');
 
-  const [bookingDate, setBookingDate] = useState(getTodayDate);
+  const [bookingDate, setBookingDate] = useState(getTomorrowDate);
   const [bookedTableIds, setBookedTableIds] = useState<string[]>([]);
   const [activeReservation, setActiveReservation] = useState<ReservationData | null>(null);
   const [backendError, setBackendError] = useState('');
@@ -96,7 +103,7 @@ function PublicApp() {
 
   // Preselection for wizard
   const [preselectedPackageId, setPreselectedPackageId] = useState<string>('paket-rame-rame');
-  const [preselectedTableId, setPreselectedTableId] = useState<string>('M-01');
+  const [selectedFloor, setSelectedFloor] = useState<1 | 2>(1);
 
   // Check Ticket Modal
   const [isCheckTicketOpen, setIsCheckTicketOpen] = useState(false);
@@ -145,21 +152,15 @@ function PublicApp() {
   }, [bookingDate]);
 
   // Handlers
-  const handleStartBooking = (packageId?: string, tableId?: string) => {
+  const handleStartBooking = (packageId?: string) => {
     if (packageId) setPreselectedPackageId(packageId);
-    if (tableId) setPreselectedTableId(tableId);
     setCurrentView('wizard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectPackageFromLanding = (packageId: string) => {
     setPreselectedPackageId(packageId);
-    handleStartBooking(packageId, preselectedTableId);
-  };
-
-  const handleSelectTableFromLanding = (table: TableItem) => {
-    setPreselectedTableId(table.id);
-    handleStartBooking(preselectedPackageId, table.id);
+    handleStartBooking(packageId);
   };
 
   const handleQuickSubmit = async (
@@ -234,6 +235,31 @@ function PublicApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleUpdateReservationOrder = async (
+    packageSelections: Record<string, number>,
+    addons: Record<string, number>,
+  ) => {
+    if (!activeReservation) {
+      throw new Error('Tiket reservasi tidak ditemukan.');
+    }
+
+    try {
+      const updatedReservation = await updateReservationOrder(
+        activeReservation.bookingId,
+        activeReservation.customerPhone,
+        packageSelections,
+        addons,
+      );
+      setActiveReservation(updatedReservation);
+      setBookingDate(updatedReservation.date);
+      setBackendError('');
+      return updatedReservation;
+    } catch (error) {
+      console.error('Failed to update reservation order:', error);
+      throw new Error(getErrorMessage(error, 'Gagal menyimpan perubahan pesanan.'));
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {backendError && (
@@ -265,6 +291,8 @@ function PublicApp() {
               }}
             />
 
+            <RulesSection />
+
             {/* Pilihan Paket Bukber */}
             <motion.div
               initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
@@ -274,11 +302,41 @@ function PublicApp() {
             >
               <PackageSection
                 packages={MENU_PACKAGES}
-                addons={ADDON_ITEMS}
                 onSelectPackage={handleSelectPackageFromLanding}
-                onAddMenu={() => handleStartBooking(preselectedPackageId, preselectedTableId)}
               />
             </motion.div>
+
+            {/* Reservasi, Lokasi & Jam Operasional */}
+            <section className="border-b border-[#E7DFD4] bg-[#F8F5F0] py-16 md:py-20">
+              <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-4 sm:px-6 lg:grid-cols-12">
+                <motion.div
+                  className="lg:col-span-7"
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
+                  whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                >
+                  <QuickBookingForm
+                    packages={MENU_PACKAGES}
+                    availableTables={tables}
+                    onDateChange={setBookingDate}
+                    onSubmitReservation={handleQuickSubmit}
+                    onSelectTableDirectly={() => {
+                      document.getElementById('denah')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  />
+                </motion.div>
+                <motion.div
+                  className="lg:col-span-5"
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
+                  whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                >
+                  <LocationSection />
+                </motion.div>
+              </div>
+            </section>
 
             {/* Fasilitas Lengkap Bento Grid */}
             <motion.div
@@ -290,85 +348,72 @@ function PublicApp() {
               <FacilitiesBento />
             </motion.div>
 
-            {/* Interactive Denah Meja Kafe Section */}
+            {/* Denah Meja Kafe */}
             <motion.section
-              className="py-16 md:py-20 bg-white border-b border-[#E7DFD4]"
+              className="border-b border-[#E7DFD4] bg-[#F8F5F0] py-16 md:py-20"
               id="denah"
               initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
               whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
             >
-              <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-                  <div>
-                    <span className="px-3.5 py-1 rounded-full bg-[#faebe2] text-[#D98A45] text-xs font-semibold">
-                      Eksplorasi Ruangan
-                    </span>
-                    <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a0f0b] mt-2">
-                      Tata Letak & Denah Meja Kafe
-                    </h2>
-                    <p className="text-xs sm:text-sm text-[#635e53] mt-1">
-                      Lihat ketersediaan meja secara live dan klik meja hijau untuk langsung memesan.
-                    </p>
-                  </div>
-
-                  {/* Legend */}
-                  <div className="flex items-center gap-4 bg-[#F8F5F0] p-2.5 rounded-xl border border-[#E7DFD4] shrink-0 text-xs">
-                    <div className="flex items-center gap-1.5 font-medium text-[#635e53]">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#71916B]" /> Tersedia
-                    </div>
-                    <div className="flex items-center gap-1.5 font-medium text-[#635e53]">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#D98A45]" /> Direservasi
-                    </div>
-                    <div className="flex items-center gap-1.5 font-medium text-[#635e53]">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#C56A64]" /> Penuh
-                    </div>
-                  </div>
+              <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                <div className="mx-auto mb-10 max-w-2xl text-center">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#faebe2] px-3.5 py-1.5 text-xs font-semibold text-[#9a5929]">
+                    <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                    Panduan Area Kafe
+                  </span>
+                  <h2 className="mt-3 font-display text-2xl font-bold text-[#1a0f0b] sm:text-3xl md:text-4xl">
+                    Denah Meja D'Lingga
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-[#635e53] sm:text-base">
+                    Kenali tata letak dan kapasitas meja sebelum memesan. Pilih
+                    meja yang tersedia melalui dropdown di formulir reservasi.
+                  </p>
                 </div>
 
-                {/* Floor Plan Visual Container */}
-                <FloorPlan
-                  tables={tables}
-                  selectedTableId={preselectedTableId}
-                  onSelectTable={handleSelectTableFromLanding}
-                  interactive={true}
-                />
-
-                {/* Quick Hint */}
-                <div className="mt-4 p-3 rounded-xl bg-[#F8F5F0] border border-[#E7DFD4] flex flex-col sm:flex-row items-center justify-between text-xs text-[#635e53] gap-2">
-                  <span className="flex items-center gap-2">
-                    <Armchair className="w-4 h-4 text-[#D98A45]" />
-                    Tips: Klik langsung pada meja yang bertanda <strong>Tersedia (Hijau)</strong> untuk
-                    memulai proses reservasi otomatis.
-                  </span>
-                  <button
-                    onClick={() => handleStartBooking(preselectedPackageId, preselectedTableId)}
-                    className="text-[#D98A45] font-bold hover:underline cursor-pointer shrink-0"
+                <div className="mx-auto max-w-xl rounded-3xl border border-[#E7DFD4] bg-white p-3 shadow-lg shadow-[#30231f]/[0.06] sm:p-5">
+                  <div
+                    className="mb-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#F8F5F0] p-1.5"
+                    aria-label="Pilih lantai denah"
                   >
-                    Buka Wizard Lengkap →
-                  </button>
+                    {([1, 2] as const).map((floor) => (
+                      <button
+                        key={floor}
+                        type="button"
+                        aria-pressed={selectedFloor === floor}
+                        onClick={() => setSelectedFloor(floor)}
+                        className={`min-h-11 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] ${
+                          selectedFloor === floor
+                            ? 'bg-[#30231f] text-white shadow-sm'
+                            : 'text-[#635e53] hover:bg-white hover:text-[#1a0f0b]'
+                        }`}
+                      >
+                        Lantai {floor}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="overflow-hidden rounded-2xl border border-[#E7DFD4] bg-[#F8F5F0] p-2 sm:p-3">
+                    <img
+                      src={selectedFloor === 1 ? floorPlanFloor1Image : floorPlanFloor2Image}
+                      alt={`Denah tata letak meja D'Lingga Coffee lantai ${selectedFloor} beserta kapasitas setiap meja`}
+                      className="mx-auto h-auto max-h-[70vh] w-full max-w-[420px] object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="mt-3 flex flex-col gap-2 rounded-2xl bg-[#F8F5F0] px-4 py-3 sm:flex-row sm:items-center sm:justify-center">
+                    <span className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-[#30231f]">
+                      <Armchair className="h-4 w-4 text-[#9a5929]" aria-hidden="true" />
+                      Sudah menemukan tempat yang cocok?
+                    </span>
+                    <span className="text-center text-sm text-[#635e53]">
+                      Pilih meja tersedia di formulir reservasi.
+                    </span>
+                  </div>
                 </div>
               </div>
             </motion.section>
 
-            {/* Quick Reservation Form & Jam Operasional + Peta Senopati */}
-            <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
-              whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.15 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-            >
-              <QuickBookingForm
-                packages={MENU_PACKAGES}
-                availableTables={tables}
-                onDateChange={setBookingDate}
-                onSubmitReservation={handleQuickSubmit}
-                onSelectTableDirectly={() => {
-                  document.getElementById('denah')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              />
-            </motion.div>
           </>
         )}
 
@@ -394,6 +439,7 @@ function PublicApp() {
             packages={MENU_PACKAGES}
             addons={ADDON_ITEMS}
             tables={tables}
+            onUpdateReservation={handleUpdateReservationOrder}
             onBackToHome={() => {
               setCurrentView('landing');
               window.scrollTo({ top: 0, behavior: 'smooth' });
