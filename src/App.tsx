@@ -177,7 +177,7 @@ function PublicApp() {
     >
   ) => {
     const chosenTable = tables.find((table) => table.id === data.tableId);
-    if (!chosenTable || !isTableCapacitySuitable(data.pax, chosenTable, tables)) {
+    if (!chosenTable || !isTableCapacitySuitable(data.pax, chosenTable)) {
       window.alert(
         `Pilih meja dengan kapasitas paling kecil yang cukup untuk ${data.pax} orang agar meja yang lebih besar tetap tersedia bagi rombongan lain.`,
       );
@@ -209,7 +209,7 @@ function PublicApp() {
     const chosenTable = tables.find((table) => table.id === newReservation.tableId);
     if (
       !chosenTable ||
-      !isTableCapacitySuitable(newReservation.pax, chosenTable, tables)
+      !isTableCapacitySuitable(newReservation.pax, chosenTable)
     ) {
       window.alert(
         `Pilih meja dengan kapasitas paling kecil yang cukup untuk ${newReservation.pax} orang agar meja yang lebih besar tetap tersedia bagi rombongan lain.`,

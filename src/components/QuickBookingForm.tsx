@@ -10,7 +10,6 @@ import {
   MessageSquare,
 } from "lucide-react";
 import {
-  getSmallestSuitableTableCapacity,
   getTomorrowDate,
   isTableCapacitySuitable,
 } from "../data/reservations";
@@ -51,17 +50,16 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
   const [notes, setNotes] = useState("");
   const [formError, setFormError] = useState("");
   const paxCount = typeof pax === "number" ? pax : 0;
-  const recommendedCapacity = paxCount
-    ? getSmallestSuitableTableCapacity(paxCount, availableTables)
-    : null;
   const capacitySuitableTables = useMemo(
     () =>
-      availableTables.filter(
-        (table) =>
-          table.status === "available" &&
-          (!recommendedCapacity || table.seats === recommendedCapacity),
-      ),
-    [availableTables, recommendedCapacity],
+      availableTables
+        .filter(
+          (table) =>
+            table.status === "available" &&
+            (!paxCount || table.seats >= paxCount),
+        )
+        .sort((a, b) => a.seats - b.seats),
+    [availableTables, paxCount],
   );
 
   useEffect(() => {
@@ -96,10 +94,10 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
     const chosenTable = availableTables.find((table) => table.id === tableId);
     if (
       !chosenTable ||
-      !isTableCapacitySuitable(paxCount, chosenTable, availableTables)
+      !isTableCapacitySuitable(paxCount, chosenTable)
     ) {
       setFormError(
-        `Tidak ada meja dengan kapasitas paling kecil yang cukup untuk ${paxCount} orang. Silakan sesuaikan jumlah tamu.`,
+        `Pilih meja tersedia dengan kapasitas yang cukup untuk ${paxCount} orang.`,
       );
       return;
     }
@@ -343,7 +341,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                 <p className="text-sm leading-relaxed text-[#4f4542]">
                   Hanya meja yang tersedia dan sesuai kapasitas yang ditampilkan
                   {paxCount ? ` untuk ${paxCount} orang` : ""}
-                  {recommendedCapacity ? ` (${recommendedCapacity} kursi)` : ""}.
+                  . Meja ditampilkan dari kapasitas terkecil.
                 </p>
               </fieldset>
 

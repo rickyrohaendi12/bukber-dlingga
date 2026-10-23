@@ -163,11 +163,5 @@ export const updateReservationStatus = async (
   return mapReservation(data as ReservationRow);
 };
 
-export const getSmallestSuitableTableCapacity = (pax: number, tables: TableItem[]) =>
-  tables
-    .map((table) => table.seats)
-    .filter((seats) => seats >= pax)
-    .sort((a, b) => a - b)[0];
-
-export const isTableCapacitySuitable = (pax: number, table: TableItem, tables: TableItem[]) =>
-  table.seats === getSmallestSuitableTableCapacity(pax, tables);
+export const isTableCapacitySuitable = (pax: number, table: TableItem) =>
+  table.seats >= pax;

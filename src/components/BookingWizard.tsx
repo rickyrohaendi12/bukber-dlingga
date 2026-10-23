@@ -6,7 +6,6 @@ import {
   ReservationData,
 } from "../types/reservation";
 import {
-  getSmallestSuitableTableCapacity,
   getTomorrowDate,
   isTableCapacitySuitable,
 } from "../data/reservations";
@@ -92,17 +91,12 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     Object.keys(packageSelections).length === 1
       ? Object.keys(packageSelections)[0]
       : "mixed";
-  const recommendedCapacity = getSmallestSuitableTableCapacity(pax, tables);
   const capacitySuitableTables = useMemo(
     () =>
-      recommendedCapacity
-        ? tables.filter(
-            (table) =>
-              table.status === "available" &&
-              table.seats === recommendedCapacity,
-          )
-        : [],
-    [recommendedCapacity, tables],
+      tables
+        .filter((table) => table.status === "available" && table.seats >= pax)
+        .sort((a, b) => a.seats - b.seats),
+    [pax, tables],
   );
   const selectedTable = tables.find((table) => table.id === selectedTableId);
 
@@ -115,9 +109,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const handlePaxChange = (nextPax: number) => {
     const adjustedPax = Math.min(12, Math.max(2, nextPax));
     setPax(adjustedPax);
-    const nextCapacity = getSmallestSuitableTableCapacity(adjustedPax, tables);
     const selectedTable = tables.find((table) => table.id === selectedTableId);
-    if (selectedTable && selectedTable.seats !== nextCapacity) {
+    if (selectedTable && selectedTable.seats < adjustedPax) {
       setSelectedTableId("");
     }
   };
@@ -183,7 +176,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       return;
     }
     const chosenTable = tables.find((table) => table.id === selectedTableId);
-    if (!chosenTable || !isTableCapacitySuitable(pax, chosenTable, tables)) {
+    if (!chosenTable || !isTableCapacitySuitable(pax, chosenTable)) {
       setFormError(
         `Pilih meja yang sesuai untuk ${pax} orang sebelum melanjutkan.`,
       );
@@ -457,7 +450,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   2. Pilih meja
                 </h3>
                 <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
-                  Pilih meja tersedia dengan kapasitas paling kecil yang cukup untuk {pax} orang.
+                  Pilih meja tersedia dengan kapasitas yang cukup untuk {pax} orang. Meja diurutkan dari kapasitas terkecil.
                 </p>
               </div>
 
@@ -476,7 +469,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 }}
                 required
                 disabled={capacitySuitableTables.length === 0}
-                className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#F8F5F0] disabled:text-[#635e53]"
+                className="min-h-12 w-full cursor-pointer rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#F8F5F0] disabled:text-[#635e53]"
               >
                 <option value="" disabled>
                   {capacitySuitableTables.length === 0
@@ -490,9 +483,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 ))}
               </select>
               <p className="mt-2 text-sm leading-relaxed text-[#4f4542]">
-                Pilihan menampilkan meja yang tersedia dan sesuai kapasitas.
+                Pilihan menampilkan semua meja yang tersedia dan cukup untuk jumlah tamu.
               </p>
-              {!recommendedCapacity && (
+              {capacitySuitableTables.length === 0 && (
                 <p className="mt-3 rounded-lg bg-[#FBEEEE] p-3 text-xs text-[#A8544E]">
                   Tidak tersedia meja yang cukup untuk {pax} orang.
                 </p>

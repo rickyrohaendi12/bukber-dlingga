@@ -359,10 +359,10 @@ export const AdminPage: React.FC = () => {
     const table = INITIAL_TABLES.find((item) => item.id === booking.tableId);
     if (
       !table ||
-      !isTableCapacitySuitable(booking.pax, table, INITIAL_TABLES)
+      !isTableCapacitySuitable(booking.pax, table)
     ) {
       window.alert(
-        `Booking tidak dapat disetujui: meja ${booking.tableId} memiliki kapasitas yang lebih besar dari yang diperlukan untuk ${booking.pax} orang.`,
+        `Booking tidak dapat disetujui: kapasitas meja ${booking.tableId} tidak cukup untuk ${booking.pax} orang.`,
       );
       return;
     }

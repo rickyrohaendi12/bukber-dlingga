@@ -92,6 +92,11 @@ Untuk menerapkan Booking ID baru dan pencegahan duplikasi, jalankan migration
 secara manual melalui SQL Editor Supabase setelah migration status DP dan
 perubahan pesanan terbaru.
 
+Jalankan juga migration
+`supabase/migrations/20261029000000_allow_any_suitable_table_capacity.sql`
+agar pelanggan dapat memilih meja mana pun yang tersedia dengan kapasitas cukup;
+meja tetap diurutkan dari kapasitas terkecil.
+
 Untuk mengizinkan jumlah paket melebihi jumlah tamu, jalankan migration
 `supabase/migrations/20261027000000_allow_extra_packages_per_guest.sql`
 secara manual melalui SQL Editor Supabase. Migration memperbarui validasi

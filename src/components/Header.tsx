@@ -121,12 +121,12 @@ export const Header: React.FC<HeaderProps> = ({
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#F8F5F0] text-[#635e53] hover:text-[#D98A45] text-xs sm:text-sm font-semibold transition-colors border border-[#E7DFD4] hover:border-[#D98A45] cursor-pointer"
           >
             <Ticket className="w-4 h-4 text-[#D98A45]" />
-            <span className="hidden sm:inline">Cek Tiket</span>
-            <span className="sm:hidden">Tiket</span>
+            <span className="hidden sm:inline">Cek Booking</span>
+            <span className="sm:hidden">Booking</span>
             {activeBookingId && (
               <span
                 className="w-2 h-2 rounded-full bg-[#71916B]"
-                title="Tiket Aktif Tersedia"
+                title="Booking Aktif Tersedia"
               />
             )}
           </button>
