@@ -40,7 +40,9 @@ export const Header: React.FC<HeaderProps> = ({
         document.querySelector("header")?.getBoundingClientRect().height ?? 64;
       const currentSection = NAV_SECTIONS.filter(({ id }) => {
         const section = document.getElementById(id);
-        return section && section.getBoundingClientRect().top <= headerHeight + 1;
+        return (
+          section && section.getBoundingClientRect().top <= headerHeight + 1
+        );
       }).at(-1);
 
       setActiveSection(currentSection?.id ?? null);
@@ -77,12 +79,12 @@ export const Header: React.FC<HeaderProps> = ({
                 D'Lingga Coffee
               </span>
               <span className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-semibold tracking-wide rounded bg-[#faebe2] text-[#D98A45] border border-[#E7DFD4]">
-                IFTAR 1446H
+                IFTAR 1448H
               </span>
             </div>
-            <p className="text-[10px] text-[#635e53] -mt-0.5 hidden sm:block">
+            {/* <p className="text-[10px] text-[#635e53] -mt-0.5 hidden sm:block">
               Cafe & Dining Lounge
-            </p>
+            </p> */}
           </div>
         </button>
 
