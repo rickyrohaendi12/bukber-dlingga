@@ -319,7 +319,7 @@ export const AdminPage: React.FC = () => {
             `package:${packageId}`,
             menuPackage?.name ?? packageId,
             quantity,
-            "orang",
+            "paket",
           );
         },
       );
@@ -887,7 +887,7 @@ export const AdminPage: React.FC = () => {
                                 <p className="font-semibold text-[#1a0f0b]">
                                   {item?.name ?? "A la Carte"}
                                   <span className="ml-1 text-xs font-normal text-[#635e53]">
-                                    × {quantity} orang
+                                    × {quantity} paket
                                   </span>
                                 </p>
                                 {item?.features.length ? (

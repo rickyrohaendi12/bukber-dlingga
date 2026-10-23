@@ -22,10 +22,12 @@ reservasi hanya tersedia untuk akun Supabase yang memiliki role admin di
 
 Di wizard booking, pelanggan dapat membagi tamu ke beberapa pilihan menu dalam
 satu reservasi, misalnya 1 Paket Hemat, 2 Paket Premium Sultan, dan 1 A la
-Carte. Jumlah alokasi harus sama dengan jumlah tamu. A la Carte tidak memiliki harga
-dasar paket dan item minuman/camilan tambahan bersifat opsional. Setiap paket
-boleh dipilih mulai dari satu orang; jumlah minimum reservasi keseluruhan tetap
-dua tamu. Harga paket dan add-on dihitung ulang di database.
+Carte. Jumlah paket minimal harus sama dengan jumlah tamu, tetapi pelanggan
+boleh memesan paket tambahan melebihi jumlah tamu. Jumlah tamu tetap menentukan
+kapasitas meja. A la Carte tidak memiliki harga dasar paket dan item
+minuman/camilan tambahan bersifat opsional. Setiap paket bisa dipesan mulai
+dari satu item; jumlah minimum reservasi keseluruhan tetap dua tamu. Harga
+paket dan add-on dihitung ulang di database.
 
 Reservasi hanya dapat dibuat mulai satu hari sebelum tanggal kedatangan.
 Formulir dan validasi database menggunakan waktu lokal Jakarta untuk aturan ini.
@@ -78,6 +80,12 @@ hingga DP sudah dibayar. Jalankan migration
 manual melalui SQL Editor Supabase sebelum menggunakan alur pembayaran ini.
 Migration memetakan booking lama berstatus `confirmed` menjadi menunggu
 pembayaran DP karena status pembayaran lamanya tidak tercatat.
+
+Untuk mengizinkan jumlah paket melebihi jumlah tamu, jalankan migration
+`supabase/migrations/20261027000000_allow_extra_packages_per_guest.sql`
+secara manual melalui SQL Editor Supabase. Migration memperbarui validasi
+booking dan endpoint edit pesanan; jumlah paket minimal tetap harus sama dengan
+jumlah tamu.
 
 Role `anon` tidak dapat membaca daftar reservasi atau mengubah status. Role
 tersebut hanya dapat membuat booking, melihat meja terisi berdasarkan tanggal,

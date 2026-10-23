@@ -236,6 +236,7 @@ function PublicApp() {
   };
 
   const handleUpdateReservationOrder = async (
+    pax: number,
     packageSelections: Record<string, number>,
     addons: Record<string, number>,
   ) => {
@@ -247,6 +248,7 @@ function PublicApp() {
       const updatedReservation = await updateReservationOrder(
         activeReservation.bookingId,
         activeReservation.customerPhone,
+        pax,
         packageSelections,
         addons,
       );

@@ -29,6 +29,7 @@ interface TicketViewProps {
   tables: TableItem[];
   onBackToHome: () => void;
   onUpdateReservation: (
+    pax: number,
     packageSelections: Record<string, number>,
     addons: Record<string, number>,
   ) => Promise<ReservationData>;
@@ -310,7 +311,7 @@ export const TicketView: React.FC<TicketViewProps> = ({
                           >
                             <div>
                               <p className="font-semibold text-[#1a0f0b]">
-                                {item?.name ?? "A la Carte"} ({quantity} orang)
+                                {item?.name ?? "A la Carte"} ({quantity} paket)
                               </p>
                               {item && (
                                 <p className="text-[10px] text-[#635e53]">

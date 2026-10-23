@@ -81,7 +81,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   }, [date, onDateChange]);
 
   // Find selected objects
-  const assignedPax = Object.values(packageSelections).reduce(
+  const selectedPackageCount = Object.values(packageSelections).reduce(
     (total, quantity) => total + quantity,
     0,
   );
@@ -113,7 +113,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   }, [capacitySuitableTables, selectedTableId]);
 
   const handlePaxChange = (nextPax: number) => {
-    const adjustedPax = Math.min(12, Math.max(2, assignedPax, nextPax));
+    const adjustedPax = Math.min(12, Math.max(2, nextPax));
     setPax(adjustedPax);
     const nextCapacity = getSmallestSuitableTableCapacity(adjustedPax, tables);
     const selectedTable = tables.find((table) => table.id === selectedTableId);
@@ -144,14 +144,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     setPackageSelections((current) => {
       const selectedCount = current[packageId] ?? 0;
       const nextCount = selectedCount + delta;
-      const currentAssignedPax = Object.values(current).reduce(
-        (total, quantity) => total + quantity,
-        0,
-      );
-      if (
-        nextCount < 0 ||
-        (delta > 0 && currentAssignedPax >= pax)
-      ) {
+      if (nextCount < 0 || nextCount > 30) {
         return current;
       }
 
@@ -196,11 +189,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       );
       return;
     }
-    if (assignedPax !== pax) {
+    if (selectedPackageCount < pax) {
       setFormError(
-        assignedPax > pax
-          ? `Jumlah paket melebihi jumlah tamu. Kurangi pilihan menu sebanyak ${assignedPax - pax} orang.`
-          : `Atur pilihan menu untuk semua tamu. Saat ini ${assignedPax} dari ${pax} tamu sudah mendapat pilihan.`,
+        `Jumlah paket minimal harus sama dengan jumlah tamu. Saat ini ${selectedPackageCount} dari minimal ${pax} paket sudah dipilih.`,
       );
       return;
     }
@@ -241,7 +232,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       .filter((item): item is string => item !== null);
     const orderedPackages = Object.entries(packageSelections).map(([id, quantity]) => {
       const item = packages.find((menuPackage) => menuPackage.id === id);
-      return `${item?.name ?? "A la Carte"} × ${quantity} orang`;
+      return `${item?.name ?? "A la Carte"} × ${quantity} paket`;
     });
     setIsSubmitting(true);
     try {
@@ -401,7 +392,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     <button
                       type="button"
                       aria-label="Kurangi jumlah tamu"
-                      disabled={pax <= Math.max(assignedPax, 2)}
+                      disabled={pax <= 2}
                       onClick={() => handlePaxChange(Math.max(2, pax - 1))}
                       className="h-12 w-12 bg-[#F8F5F0] text-xl font-bold text-[#1a0f0b] hover:bg-[#e7dfd1] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:cursor-not-allowed disabled:opacity-40"
                     >
@@ -546,15 +537,19 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   id="package-selection-title"
                   className="font-display text-lg font-bold text-[#1a0f0b]"
                 >
-                  Atur menu untuk setiap tamu
+                  Atur pilihan menu
                 </h3>
                 <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
-                  Bagi jumlah tamu ke paket atau A la Carte. Total pilihan harus
-                  sama dengan jumlah tamu di atas.
+                  Pilih minimal satu paket per tamu. Anda boleh memesan paket
+                  tambahan melebihi jumlah tamu.
                 </p>
                 <p className="mt-2 text-sm font-semibold leading-relaxed text-[#8c4d20]" aria-live="polite">
-                  Sudah dipilih: {assignedPax} dari {pax} tamu
-                  {assignedPax < pax ? ` · Pilih untuk ${pax - assignedPax} tamu lagi` : " · Semua tamu sudah dipilih"}
+                  {selectedPackageCount} paket dipilih untuk {pax} tamu
+                  {selectedPackageCount < pax
+                    ? ` · Tambahkan minimal ${pax - selectedPackageCount} paket lagi`
+                    : selectedPackageCount > pax
+                      ? ` · ${selectedPackageCount - pax} paket tambahan`
+                      : " · Minimal paket per tamu terpenuhi"}
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -582,7 +577,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       </span>
                       <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#E7DFD4] pt-3">
                         <span className="text-sm text-[#4f4542]">
-                          Bisa dipilih mulai 1 orang
+                          Bisa dipesan mulai 1 paket
                         </span>
                         <div className="flex items-center gap-2">
                           <button
@@ -595,12 +590,12 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                             <Minus className="h-3.5 w-3.5" />
                           </button>
                           <span className="min-w-16 text-center text-sm font-bold text-[#1a0f0b]">
-                            {quantity} orang
+                            {quantity} paket
                           </span>
                           <button
                             type="button"
                             aria-label={`Tambah ${item.name}`}
-                            disabled={assignedPax >= pax}
+                            disabled={quantity >= 30}
                             onClick={() => handlePackageQty(item.id, 1)}
                             className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#9a5929] text-white hover:bg-[#78451f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
                           >
@@ -627,13 +622,13 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     </span>
                   </span>
                   <span className="mt-2 block text-sm leading-relaxed text-[#4f4542]">
-                    Untuk tamu yang tidak memilih paket. Tambahkan minuman atau
-                    camilan A la Carte di bawah.
+                    Pilih paket A la Carte untuk tiap porsi yang ingin dipesan,
+                    lalu pilih minuman atau camilan di bawah jika diperlukan.
                   </span>
                   <div className="mt-3 flex items-center justify-end gap-2 border-t border-[#E7DFD4] pt-3">
                     <button
                       type="button"
-                      aria-label="Kurangi tamu A la Carte"
+                      aria-label="Kurangi jumlah paket A la Carte"
                       disabled={!packageSelections["a-la-carte"]}
                       onClick={() => handlePackageQty("a-la-carte", -1)}
                       className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#cfc4b7] text-[#1a0f0b] hover:bg-[#F8F5F0] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
@@ -641,12 +636,12 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       <Minus className="h-3.5 w-3.5" />
                     </button>
                     <span className="min-w-16 text-center text-sm font-bold text-[#1a0f0b]">
-                      {packageSelections["a-la-carte"] ?? 0} orang
+                      {packageSelections["a-la-carte"] ?? 0} paket
                     </span>
                     <button
                       type="button"
-                      aria-label="Tambah tamu A la Carte"
-                      disabled={assignedPax >= pax}
+                      aria-label="Tambah jumlah paket A la Carte"
+                      disabled={(packageSelections["a-la-carte"] ?? 0) >= 30}
                       onClick={() => handlePackageQty("a-la-carte", 1)}
                       className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#9a5929] text-white hover:bg-[#78451f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
                     >
@@ -801,8 +796,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                           <p className="font-bold text-[#1a0f0b]">{label}</p>
                           <p className="text-[11px] text-[#635e53]">
                             {isALaCarte
-                              ? `${quantity} orang · harga sesuai item tambahan`
-                              : `${quantity} orang × Rp${unitPrice.toLocaleString("id-ID")}`}
+                              ? `${quantity} paket · harga sesuai item tambahan`
+                              : `${quantity} paket × Rp${unitPrice.toLocaleString("id-ID")}`}
                           </p>
                         </div>
                         {!isALaCarte && (

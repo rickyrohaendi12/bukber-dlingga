@@ -99,12 +99,14 @@ export const createReservation = async (
 export const updateReservationOrder = async (
   bookingId: string,
   phone: string,
+  pax: number,
   packageSelections: Record<string, number>,
   addons: Record<string, number>,
 ) => {
   const { data, error } = await requireSupabase().rpc('update_reservation_order', {
     p_booking_id: bookingId,
     p_phone: phone,
+    p_pax: pax,
     p_package_selections: packageSelections,
     p_addons: addons,
   });

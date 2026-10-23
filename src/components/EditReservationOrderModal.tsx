@@ -9,6 +9,7 @@ interface EditReservationOrderModalProps {
   addons: AddonItem[];
   onClose: () => void;
   onSave: (
+    pax: number,
     packageSelections: Record<string, number>,
     addons: Record<string, number>,
   ) => Promise<ReservationData>;
@@ -33,6 +34,9 @@ const getEditErrorMessage = (error: unknown) => {
   if (message.includes("INVALID_GUEST_COUNT")) {
     return "Jumlah tamu harus antara 2 hingga 12 orang.";
   }
+  if (message.includes("PACKAGE_SELECTIONS_MUST_AT_LEAST_MATCH_GUEST_COUNT")) {
+    return "Jumlah paket minimal harus sama dengan jumlah tamu.";
+  }
   return message || "Gagal menyimpan perubahan pesanan. Silakan coba lagi.";
 };
 
@@ -46,10 +50,11 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
   const [packageSelections, setPackageSelections] = useState(
     reservation.packageSelections,
   );
+  const [pax, setPax] = useState(reservation.pax);
   const [selectedAddons, setSelectedAddons] = useState(reservation.addons);
   const [formError, setFormError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const pax = Object.values(packageSelections).reduce(
+  const packageCount = Object.values(packageSelections).reduce(
     (total, quantity) => total + quantity,
     0,
   );
@@ -74,15 +79,7 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
   const updatePackageQuantity = (packageId: string, quantity: number) => {
     setPackageSelections((current) => {
       const currentQuantity = current[packageId] ?? 0;
-      const otherPax = Object.entries(current).reduce(
-        (total, [id, selectedQuantity]) =>
-          total + (id === packageId ? 0 : selectedQuantity),
-        0,
-      );
-      const nextQuantity = Math.min(
-        Math.max(0, Math.floor(quantity)),
-        Math.max(0, 12 - otherPax),
-      );
+      const nextQuantity = Math.min(30, Math.max(0, Math.floor(quantity)));
 
       const next = { ...current };
       if (nextQuantity === 0) delete next[packageId];
@@ -111,6 +108,12 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
       setFormError("Jumlah tamu harus antara 2 hingga 12 orang.");
       return;
     }
+    if (packageCount < pax) {
+      setFormError(
+        `Jumlah paket minimal harus sama dengan jumlah tamu. Pilih setidaknya ${pax} paket.`,
+      );
+      return;
+    }
     if (!isReservationEditable(reservation)) {
       setFormError("Batas waktu mengubah pesanan telah terlewati.");
       return;
@@ -118,7 +121,7 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
 
     setIsSaving(true);
     try {
-      await onSave(packageSelections, selectedAddons);
+      await onSave(pax, packageSelections, selectedAddons);
       onClose();
     } catch (error) {
       setFormError(getEditErrorMessage(error));
@@ -167,11 +170,30 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
         <form onSubmit={handleSubmit} className="space-y-6 p-5 sm:p-6">
           <div className="rounded-xl border border-[#E7DFD4] bg-white p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="font-semibold text-[#1a0f0b]">Paket dan jumlah tamu</h3>
+              <h3 className="font-semibold text-[#1a0f0b]">Jumlah tamu</h3>
               <span className="rounded-full bg-[#faebe2] px-3 py-1 text-sm font-bold text-[#8c4d20]">
                 {pax} tamu
               </span>
             </div>
+            <div className="flex items-center justify-between rounded-lg bg-[#fffdfa] p-3">
+              <span className="text-sm text-[#635e53]">
+                Kapasitas meja mengikuti jumlah tamu
+              </span>
+              <QuantityControl
+                label="Jumlah tamu"
+                quantity={pax}
+                min={2}
+                max={12}
+                canDecrease={pax > 2}
+                canIncrease={pax < 12}
+                onChange={(quantity) =>
+                  setPax(Math.min(12, Math.max(2, quantity)))
+                }
+              />
+            </div>
+            <h3 className="mb-2 mt-5 font-semibold text-[#1a0f0b]">
+              Jumlah paket
+            </h3>
             <div className="space-y-3">
               {packages.map((item) => {
                 const quantity = packageSelections[item.id] ?? 0;
@@ -189,9 +211,10 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
                     <QuantityControl
                       label={item.name}
                       quantity={quantity}
-                      max={quantity + (12 - pax)}
+                      min={0}
+                      max={30}
                       canDecrease={quantity > 0}
-                      canIncrease={pax < 12}
+                      canIncrease={quantity < 30}
                       onChange={(nextQuantity) =>
                         updatePackageQuantity(item.id, nextQuantity)
                       }
@@ -207,11 +230,10 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
                 <QuantityControl
                   label="Paket A La Carte"
                   quantity={packageSelections[A_LA_CARTE_ID] ?? 0}
-                  max={
-                    (packageSelections[A_LA_CARTE_ID] ?? 0) + (12 - pax)
-                  }
+                  min={0}
+                  max={30}
                   canDecrease={(packageSelections[A_LA_CARTE_ID] ?? 0) > 0}
-                  canIncrease={pax < 12}
+                  canIncrease={(packageSelections[A_LA_CARTE_ID] ?? 0) < 30}
                   onChange={(nextQuantity) =>
                     updatePackageQuantity(A_LA_CARTE_ID, nextQuantity)
                   }
@@ -219,8 +241,8 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
               </div>
             </div>
             <p className="mt-3 text-xs leading-relaxed text-[#635e53]">
-              Atur jumlah tamu dengan menambah atau mengurangi pilihan paket. Total
-              tamu maksimal 12 orang.
+              Minimal pesan satu paket per tamu. Jumlah paket boleh melebihi
+              jumlah tamu; jumlah tamu maksimal 12 orang.
             </p>
           </div>
 
@@ -251,6 +273,7 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
                   <QuantityControl
                     label={item.name}
                     quantity={selectedAddons[item.id] ?? 0}
+                    min={0}
                     max={20}
                     canDecrease={(selectedAddons[item.id] ?? 0) > 0}
                     canIncrease={(selectedAddons[item.id] ?? 0) < 20}
@@ -312,6 +335,7 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
 interface QuantityControlProps {
   label: string;
   quantity: number;
+  min: number;
   max: number;
   canDecrease: boolean;
   canIncrease: boolean;
@@ -321,6 +345,7 @@ interface QuantityControlProps {
 const QuantityControl: React.FC<QuantityControlProps> = ({
   label,
   quantity,
+  min,
   max,
   canDecrease,
   canIncrease,
@@ -338,7 +363,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
     </button>
     <input
       type="number"
-      min={0}
+      min={min}
       max={max}
       step={1}
       inputMode="numeric"
