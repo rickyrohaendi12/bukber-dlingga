@@ -53,7 +53,7 @@ export interface ReservationData {
   tableId: string;
   notes?: string;
   addons: { [addonId: string]: number };
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'awaiting_dp' | 'dp_paid' | 'cancelled';
   createdAt: string;
   subtotal: number;
   taxAmount: number;

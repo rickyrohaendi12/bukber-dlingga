@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Armchair,
+  BadgeCheck,
+  Banknote,
   CalendarDays,
   Check,
   CheckCircle2,
@@ -24,6 +26,7 @@ import {
 import { ReservationData } from "../types/reservation";
 import type { Session } from "@supabase/supabase-js";
 import dlinggaLogo from "../img/dlingga.jpg";
+import qrisImage from "../img/qris.jpg";
 import { isSupabaseConfigured, requireSupabase } from "../lib/supabase";
 import {
   getReservations,
@@ -53,7 +56,8 @@ const formatRupiah = (amount: number) =>
 
 const statusLabels: Record<ReservationData["status"], string> = {
   pending: "Menunggu approval",
-  confirmed: "Disetujui",
+  awaiting_dp: "Menunggu pembayaran DP",
+  dp_paid: "DP sudah dibayar",
   cancelled: "Dibatalkan",
 };
 
@@ -67,12 +71,13 @@ const getWhatsAppNumber = (phone: string) => {
   return /^\d{8,15}$/.test(internationalNumber) ? internationalNumber : null;
 };
 
-const getApprovalMessageUrl = (booking: ReservationData) => {
+const getDpPaymentMessageUrl = (booking: ReservationData) => {
   const phone = getWhatsAppNumber(booking.customerPhone);
   if (!phone) return null;
 
+  const deposit = Math.ceil(booking.totalAmount / 2);
   const message = [
-    `Halo ${booking.customerName}, booking buka puasa Anda telah DISETUJUI.`,
+    `Halo ${booking.customerName}, booking buka puasa Anda telah disetujui.`,
     "",
     `Booking ID: ${booking.bookingId}`,
     `Tanggal: ${formatDate(booking.date)}`,
@@ -80,8 +85,27 @@ const getApprovalMessageUrl = (booking: ReservationData) => {
     `Jumlah tamu: ${booking.pax} orang`,
     `Meja: ${booking.tableId}`,
     `Total: ${formatRupiah(booking.totalAmount)}`,
+    `DP 50%: ${formatRupiah(deposit)}`,
     "",
-    "Terima kasih telah melakukan reservasi di Bukber Lounge. Sampai jumpa!",
+    "Silakan lakukan pembayaran DP melalui QRIS terlampir, lalu kirim bukti pembayaran di chat ini. Reservasi akan berstatus DP dibayar setelah pembayaran diverifikasi admin.",
+  ].join("\n");
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+};
+
+const getDpPaidMessageUrl = (booking: ReservationData) => {
+  const phone = getWhatsAppNumber(booking.customerPhone);
+  if (!phone) return null;
+
+  const message = [
+    `Halo ${booking.customerName}, pembayaran DP 50% untuk reservasi Anda sudah kami konfirmasi.`,
+    "",
+    `Booking ID: ${booking.bookingId}`,
+    `Tanggal: ${formatDate(booking.date)}`,
+    `Jumlah DP: ${formatRupiah(Math.ceil(booking.totalAmount / 2))}`,
+    `Sisa pembayaran: ${formatRupiah(booking.totalAmount - Math.ceil(booking.totalAmount / 2))}`,
+    "",
+    "Terima kasih. Sampai jumpa di D'Lingga Coffee!",
   ].join("\n");
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
@@ -253,8 +277,11 @@ export const AdminPage: React.FC = () => {
       all: dailyReservations.length,
       pending: dailyReservations.filter((booking) => booking.status === "pending")
         .length,
-      confirmed: dailyReservations.filter(
-        (booking) => booking.status === "confirmed",
+      awaiting_dp: dailyReservations.filter(
+        (booking) => booking.status === "awaiting_dp",
+      ).length,
+      dp_paid: dailyReservations.filter(
+        (booking) => booking.status === "dp_paid",
       ).length,
       cancelled: dailyReservations.filter(
         (booking) => booking.status === "cancelled",
@@ -342,7 +369,7 @@ export const AdminPage: React.FC = () => {
 
     let updatedBooking: ReservationData;
     try {
-      updatedBooking = await updateReservationStatus(bookingId, "confirmed");
+      updatedBooking = await updateReservationStatus(bookingId, "awaiting_dp");
       setReservations((current) =>
         current.map((item) => item.bookingId === bookingId ? updatedBooking : item),
       );
@@ -355,15 +382,27 @@ export const AdminPage: React.FC = () => {
       return;
     }
 
-    const whatsappUrl = getApprovalMessageUrl(updatedBooking);
-    if (whatsappUrl) {
-      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-    } else {
-      window.alert(
-        `Booking disetujui, tetapi nomor WhatsApp pelanggan "${booking.customerPhone}" tidak valid. Periksa nomor tersebut untuk mengirim konfirmasi.`,
+  };
+
+  const confirmDpPayment = async (bookingId: string) => {
+    const booking = reservations.find((item) => item.bookingId === bookingId);
+    if (!booking || booking.status !== "awaiting_dp") return;
+
+    try {
+      const updatedBooking = await updateReservationStatus(bookingId, "dp_paid");
+      setReservations((current) =>
+        current.map((item) =>
+          item.bookingId === bookingId ? updatedBooking : item,
+        ),
+      );
+      setLoadError("");
+    } catch (error) {
+      setLoadError(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengonfirmasi pembayaran DP.",
       );
     }
-
   };
 
   const selectedTable = selectedBooking
@@ -548,7 +587,7 @@ export const AdminPage: React.FC = () => {
         </section>
 
         <section
-          className="mb-7 grid grid-cols-2 gap-3 lg:grid-cols-4"
+          className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5"
           aria-label="Ringkasan booking"
         >
           {(
@@ -568,9 +607,16 @@ export const AdminPage: React.FC = () => {
                 "bg-[#FFF4E7]",
               ],
               [
-                "confirmed",
-                "Disetujui",
-                CheckCircle2,
+                "awaiting_dp",
+                "Menunggu DP",
+                Banknote,
+                "text-[#9A5929]",
+                "bg-[#FFF4E7]",
+              ],
+              [
+                "dp_paid",
+                "DP sudah dibayar",
+                BadgeCheck,
                 "text-[#52724D]",
                 "bg-[#EEF5EB]",
               ],
@@ -679,7 +725,7 @@ export const AdminPage: React.FC = () => {
                 />
               </label>
               <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                {(["all", "pending", "confirmed", "cancelled"] as const).map(
+                {(["all", "pending", "awaiting_dp", "dp_paid", "cancelled"] as const).map(
                   (value) => (
                     <button
                       key={value}
@@ -939,45 +985,95 @@ export const AdminPage: React.FC = () => {
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#52724D] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#415e3c] focus:outline-none focus:ring-4 focus:ring-[#52724D]/20"
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    Setujui booking
+                    Setujui booking & minta DP 50%
                   </button>
                 ) : (
                   <div className="space-y-2">
                     <div
                       className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${
-                        selectedBooking.status === "confirmed"
+                        selectedBooking.status === "dp_paid"
                           ? "bg-[#EEF5EB] text-[#52724D]"
-                          : "bg-[#FBEEEE] text-[#A8544E]"
+                          : selectedBooking.status === "cancelled"
+                            ? "bg-[#FBEEEE] text-[#A8544E]"
+                            : "bg-[#FFF4E7] text-[#9A5929]"
                       }`}
                     >
                       <CheckCircle2 className="h-4 w-4" />
                       {statusLabels[selectedBooking.status]}
                     </div>
-                    {selectedBooking.status === "confirmed" &&
-                      (getApprovalMessageUrl(selectedBooking) ? (
+                    {selectedBooking.status === "awaiting_dp" && (
+                      <>
+                        <div className="rounded-xl border border-[#E7DFD4] bg-[#fffdfa] p-4">
+                          <p className="mb-3 text-sm font-bold text-[#1a0f0b]">
+                            QRIS pembayaran DP 50% ·{" "}
+                            {formatRupiah(Math.ceil(selectedBooking.totalAmount / 2))}
+                          </p>
+                          <img
+                            src={qrisImage}
+                            alt="QRIS untuk pembayaran uang muka reservasi"
+                            className="mx-auto max-h-64 w-auto rounded-lg border border-[#E7DFD4] object-contain"
+                          />
+                          <a
+                            href={qrisImage}
+                            download="QRIS-DLingga.jpg"
+                            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#E7DFD4] bg-white px-4 py-2.5 text-sm font-semibold text-[#635e53] hover:bg-[#F8F5F0]"
+                          >
+                            Unduh gambar QRIS untuk dilampirkan
+                          </a>
+                          <p className="mt-3 rounded-lg bg-[#FFF4E7] p-3 text-xs leading-5 text-[#8b531d]">
+                            Pastikan gambar QRIS ini sudah diganti dengan QR
+                            merchant yang benar dan dapat dipindai sebelum
+                            dikirim. WhatsApp tidak melampirkan gambar secara
+                            otomatis; unduh gambar lalu lampirkan di chat.
+                          </p>
+                        </div>
+                        {getDpPaymentMessageUrl(selectedBooking) ? (
+                          <a
+                            href={getDpPaymentMessageUrl(selectedBooking) ?? undefined}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#20ba5a] focus:outline-none focus:ring-4 focus:ring-[#25D366]/20"
+                          >
+                            <MessageCircle className="h-4 w-4" />
+                            Buka WhatsApp untuk instruksi DP
+                          </a>
+                        ) : (
+                          <p className="rounded-xl bg-[#FFF4E7] px-4 py-3 text-xs leading-5 text-[#8b531d]">
+                            Nomor WhatsApp pelanggan tidak valid. Periksa nomor
+                            booking untuk mengirim instruksi DP.
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => confirmDpPayment(selectedBooking.bookingId)}
+                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#52724D] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#415e3c] focus:outline-none focus:ring-4 focus:ring-[#52724D]/20"
+                        >
+                          <BadgeCheck className="h-4 w-4" />
+                          Konfirmasi DP sudah dibayar
+                        </button>
+                        <p className="text-center text-[11px] leading-4 text-[#635e53]">
+                          Tandai sudah dibayar hanya setelah admin memverifikasi
+                          pembayaran masuk.
+                        </p>
+                      </>
+                    )}
+                    {selectedBooking.status === "dp_paid" &&
+                      (getDpPaidMessageUrl(selectedBooking) ? (
                         <a
-                          href={
-                            getApprovalMessageUrl(selectedBooking) ?? undefined
-                          }
+                          href={getDpPaidMessageUrl(selectedBooking) ?? undefined}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#20ba5a] focus:outline-none focus:ring-4 focus:ring-[#25D366]/20"
                         >
                           <MessageCircle className="h-4 w-4" />
-                          Kirim ulang konfirmasi WhatsApp
+                          Kirim konfirmasi pembayaran DP
                         </a>
                       ) : (
                         <p className="rounded-xl bg-[#FFF4E7] px-4 py-3 text-xs leading-5 text-[#8b531d]">
                           Nomor WhatsApp pelanggan tidak valid. Periksa nomor
-                          booking untuk mengirim konfirmasi.
+                          booking untuk mengirim konfirmasi pembayaran.
                         </p>
                       ))}
-                    {selectedBooking.status === "confirmed" && (
-                      <p className="text-center text-[11px] leading-4 text-[#635e53]">
-                        WhatsApp terbuka dengan pesan konfirmasi. Tekan Kirim
-                        agar pelanggan menerimanya.
-                      </p>
-                    )}
                   </div>
                 )}
               </div>
@@ -1004,7 +1100,8 @@ const StatusBadge: React.FC<{ status: ReservationData["status"] }> = ({
 }) => {
   const styles: Record<ReservationData["status"], string> = {
     pending: "bg-[#FFF1DF] text-[#A85E1C]",
-    confirmed: "bg-[#EAF3E7] text-[#52724D]",
+    awaiting_dp: "bg-[#FFF1DF] text-[#9A5929]",
+    dp_paid: "bg-[#EAF3E7] text-[#52724D]",
     cancelled: "bg-[#F9E9E8] text-[#A8544E]",
   };
   return (

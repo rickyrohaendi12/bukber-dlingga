@@ -144,7 +144,16 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     setPackageSelections((current) => {
       const selectedCount = current[packageId] ?? 0;
       const nextCount = selectedCount + delta;
-      if (nextCount < 0 || (delta > 0 && assignedPax >= pax)) return current;
+      const currentAssignedPax = Object.values(current).reduce(
+        (total, quantity) => total + quantity,
+        0,
+      );
+      if (
+        nextCount < 0 ||
+        (delta > 0 && currentAssignedPax >= pax)
+      ) {
+        return current;
+      }
 
       const next = { ...current };
       if (nextCount === 0) delete next[packageId];
@@ -189,7 +198,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
     }
     if (assignedPax !== pax) {
       setFormError(
-        `Atur pilihan menu untuk semua tamu. Saat ini ${assignedPax} dari ${pax} tamu sudah mendapat pilihan.`,
+        assignedPax > pax
+          ? `Jumlah paket melebihi jumlah tamu. Kurangi pilihan menu sebanyak ${assignedPax - pax} orang.`
+          : `Atur pilihan menu untuk semua tamu. Saat ini ${assignedPax} dari ${pax} tamu sudah mendapat pilihan.`,
       );
       return;
     }

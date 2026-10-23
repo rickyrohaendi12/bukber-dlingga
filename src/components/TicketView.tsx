@@ -51,6 +51,9 @@ export const TicketView: React.FC<TicketViewProps> = ({
     }),
   );
   const selectedTable = tables.find((t) => t.id === reservation.tableId);
+  const isDpPaid = reservation.status === "dp_paid";
+  const isCancelled = reservation.status === "cancelled";
+  const isAwaitingDp = reservation.status === "awaiting_dp";
 
   // Format Indonesian Date
   const formatIndoDate = (dateString: string) => {
@@ -101,22 +104,24 @@ export const TicketView: React.FC<TicketViewProps> = ({
 
           <div
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3 ${
-              reservation.status === "confirmed"
+              isDpPaid
                 ? "bg-[#EEF5EB] text-[#52724D]"
-                : reservation.status === "cancelled"
+                : isCancelled
                   ? "bg-[#FBEEEE] text-[#A8544E]"
                   : "bg-[#faebe2] text-[#D98A45]"
             }`}
           >
             <span className="material-symbols-outlined text-sm">
-              {reservation.status === "confirmed"
+              {isDpPaid
                 ? "check_circle"
                 : "hourglass_top"}
             </span>
             <span>
-              {reservation.status === "confirmed"
-                ? "Reservasi Telah Disetujui"
-                : reservation.status === "cancelled"
+              {isDpPaid
+                ? "DP Sudah Dibayar"
+                : isAwaitingDp
+                  ? "Menunggu Pembayaran DP"
+                  : isCancelled
                   ? "Reservasi Dibatalkan"
                   : "Menunggu Verifikasi Admin"}
             </span>
@@ -131,9 +136,11 @@ export const TicketView: React.FC<TicketViewProps> = ({
               Kak {reservation.customerName}
             </strong>
             ,
-            {reservation.status === "confirmed"
-              ? "reservasi buka puasa bersamamu telah disetujui oleh admin."
-              : reservation.status === "cancelled"
+            {isDpPaid
+              ? "pembayaran DP reservasi buka puasa bersamamu telah dikonfirmasi oleh admin."
+              : isAwaitingDp
+                ? "reservasi buka puasa bersamamu telah disetujui. Silakan selesaikan pembayaran DP 50% melalui instruksi QRIS yang dikirim admin via WhatsApp."
+                : isCancelled
                 ? "reservasi buka puasa bersamamu telah dibatalkan."
                 : "pengajuan reservasi buka puasa bersamamu telah kami terima dan sedang diverifikasi admin."}
           </p>
@@ -163,9 +170,9 @@ export const TicketView: React.FC<TicketViewProps> = ({
             {/* Status Notification Strip */}
             <div
               className={`border-b px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-                reservation.status === "confirmed"
+                isDpPaid
                   ? "bg-[#F2F8EF] border-[#DCEAD6]"
-                  : reservation.status === "cancelled"
+                  : isCancelled
                     ? "bg-[#FBF0EF] border-[#F0D8D6]"
                     : "bg-[#FFF8EE] border-[#F5E5C9]"
               }`}
@@ -173,36 +180,40 @@ export const TicketView: React.FC<TicketViewProps> = ({
               <div className="flex items-center gap-2.5">
                 <span
                   className={`w-2.5 h-2.5 rounded-full ${
-                    reservation.status === "confirmed"
+                    isDpPaid
                       ? "bg-[#71916B]"
-                      : reservation.status === "cancelled"
+                      : isCancelled
                         ? "bg-[#C56A64]"
                         : "bg-[#D98A45] animate-ping"
                   }`}
                 />
                 <span
                   className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    reservation.status === "confirmed"
+                    isDpPaid
                       ? "bg-[#71916B]/15 text-[#52724D]"
-                      : reservation.status === "cancelled"
+                      : isCancelled
                         ? "bg-[#C56A64]/15 text-[#A8544E]"
                         : "bg-[#D98A45]/20 text-[#9C5A14]"
                   }`}
                 >
-                  {reservation.status === "confirmed"
-                    ? "Booking Disetujui"
-                    : reservation.status === "cancelled"
+                  {isDpPaid
+                    ? "DP Sudah Dibayar"
+                    : isAwaitingDp
+                      ? "Menunggu Pembayaran DP"
+                      : isCancelled
                       ? "Booking Dibatalkan"
-                      : "Pending Confirmation"}
+                      : "Menunggu Approval"}
                 </span>
               </div>
               <p className="text-xs text-[#635e53] flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[#D98A45] text-base">
                   info
                 </span>
-                {reservation.status === "confirmed"
-                  ? "Booking Anda telah dikonfirmasi oleh admin"
-                  : reservation.status === "cancelled"
+                {isDpPaid
+                  ? "Pembayaran DP Anda telah diverifikasi admin"
+                  : isAwaitingDp
+                    ? "Booking disetujui. Selesaikan pembayaran DP 50% melalui QRIS yang dikirim admin via WhatsApp"
+                    : isCancelled
                     ? "Hubungi admin jika Anda memerlukan informasi lebih lanjut"
                     : "Admin akan mengonfirmasi meja Anda dalam 15-30 menit via WhatsApp"}
               </p>

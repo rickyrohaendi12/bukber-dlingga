@@ -64,8 +64,20 @@ build ulang aplikasi.
 ## Panel Admin
 
 Buka `/admin-dlingga-9746` untuk melihat daftar reservasi, rincian paket dan
-add-on, serta menyetujui booking berstatus pending. Panel dapat memuat ulang
-data langsung dari Supabase. Masuk dengan akun Supabase ber-role admin.
+add-on, menyetujui booking, mengirim instruksi DP 50% beserta gambar QRIS, dan
+mengonfirmasi pembayaran DP. Setelah booking disetujui, admin mengunduh gambar
+QRIS dari panel dan melampirkannya sendiri di WhatsApp; WhatsApp tidak dapat
+melampirkan gambar secara otomatis dari tautan pesan. Ganti
+`src/img/qris.jpg` dengan QRIS merchant yang valid sebelum menerima pembayaran.
+Panel dapat memuat ulang data langsung dari Supabase. Masuk dengan akun
+Supabase ber-role admin.
+
+Status reservasi berurutan dari menunggu approval, menunggu pembayaran DP,
+hingga DP sudah dibayar. Jalankan migration
+`supabase/migrations/20261026000000_add_deposit_payment_status.sql` secara
+manual melalui SQL Editor Supabase sebelum menggunakan alur pembayaran ini.
+Migration memetakan booking lama berstatus `confirmed` menjadi menunggu
+pembayaran DP karena status pembayaran lamanya tidak tercatat.
 
 Role `anon` tidak dapat membaca daftar reservasi atau mengubah status. Role
 tersebut hanya dapat membuat booking, melihat meja terisi berdasarkan tanggal,
@@ -76,8 +88,8 @@ rute panel di frontend bukan satu-satunya lapisan perlindungan.
 Pencarian tiket pada antarmuka meminta kedua nilai tersebut. Booking dan harga
 divalidasi di database; nomor Booking ID dibuat oleh Supabase, dan pemesanan
 meja yang sama pada tanggal yang sama ditolak secara atomik selama statusnya
-pending atau confirmed. Data lama yang hanya tersimpan di `localStorage` tidak
-dimigrasikan otomatis; bila perlu, ekspor dan impor data lama sebelum
-menghapusnya.
+menunggu approval, menunggu DP, atau DP sudah dibayar. Data lama yang hanya
+tersimpan di `localStorage` tidak dimigrasikan otomatis; bila perlu, ekspor dan
+impor data lama sebelum menghapusnya.
 
 Saat formulir booking diajukan, aplikasi membuka WhatsApp ke nomor CS yang dikonfigurasi dengan detail reservasi terisi sebagai pesan. Pemesan tetap perlu menekan tombol Kirim di WhatsApp. Saat admin menyetujui booking, WhatsApp terbuka ke nomor pemesan dengan pesan persetujuan; admin perlu menekan Kirim agar pelanggan menerimanya. Pengiriman otomatis tanpa tindakan pengguna memerlukan integrasi WhatsApp Business API di backend.
