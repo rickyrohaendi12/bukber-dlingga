@@ -88,6 +88,11 @@ const getDpPaymentMessageUrl = (booking: ReservationData) => {
     `DP 50%: ${formatRupiah(deposit)}`,
     "",
     "Silakan lakukan pembayaran DP melalui QRIS terlampir, lalu kirim bukti pembayaran di chat ini. Reservasi akan berstatus DP dibayar setelah pembayaran diverifikasi admin.",
+    "",
+    "Ketentuan bukber:",
+    "• Mohon hadir 15 menit sebelum waktu berbuka (maksimal pukul 17.45 WIB).",
+    "• Toleransi keterlambatan tanpa konfirmasi adalah 20 menit; setelah itu meja dapat dialihkan ke tamu waiting list.",
+    "• Reservasi sah setelah konfirmasi resmi atau e-tiket diterima.",
   ].join("\n");
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;

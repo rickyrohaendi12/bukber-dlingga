@@ -26,8 +26,8 @@ export const Footer: React.FC = () => {
               </span>
             </div>
             <p className="text-[#635e53] text-xs max-w-md">
-              © 2025 Bukber Cafe & Lounge. Hangatnya Silaturahmi di Bulan
-              Ramadan. Seluruh hak cipta dilindungi.
+              © 2025 D'Lingga Coffee. Hangatnya Silaturahmi di Bulan Ramadan.
+              Seluruh hak cipta dilindungi.
             </p>
           </div>
 
@@ -94,7 +94,7 @@ export const Footer: React.FC = () => {
                 <>
                   <p>
                     1. Reservasi dianggap sah setelah tamu menerima konfirmasi
-                    resmi atau e-tiket dari admin Bukber Lounge via WhatsApp.
+                    resmi atau e-tiket dari admin D'Lingga Coffee via WhatsApp.
                   </p>
                   <p>
                     2. Tamu diharapkan hadir setidaknya 15 menit sebelum waktu
@@ -112,17 +112,16 @@ export const Footer: React.FC = () => {
               ) : (
                 <>
                   <p>
-                    1. Pembatalan tanpa potongan (Refund DP 100%) dapat diajukan
-                    maksimal H-1 sebelum jadwal buka puasa.
+                    1. Reservasi kurang dari 15 pax wajib melakukan pembayaran
+                    uang muka (DP) min. 30% ; apabila lebih dari 20 pax min. 50%
+                  </p>
+                  <p>2. Pembayaran sisa uang muka dapat dilakukan di tempat;</p>
+                  <p>
+                    3. Konfirmasi/fiksasi pesanan satu hari sebelumnya atau di
+                    hari H (tidak mendekati waktu buka puasa)
                   </p>
                   <p>
-                    2. Pembatalan pada hari-H (kurang dari 12 jam) dikenakan
-                    biaya operasional bahan dapur sebesar 50% dari total DP yang
-                    disetor.
-                  </p>
-                  <p>
-                    3. Reschedule / pindah tanggal bebas biaya selama kuota meja
-                    pada tanggal pengganti masih tersedia.
+                    4. Uang muka (DP) tidak dapat refund apabila canceled order.
                   </p>
                 </>
               )}
