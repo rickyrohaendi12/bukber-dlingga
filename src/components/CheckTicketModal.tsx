@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { ReservationData } from '../types/reservation';
-import { X, Search, Ticket, AlertCircle } from 'lucide-react';
-import { lookupReservation } from '../data/reservations';
+import React, { useState } from "react";
+import { ReservationData } from "../types/reservation";
+import { X, Search, Ticket, AlertCircle } from "lucide-react";
+import { lookupReservation } from "../data/reservations";
 
 interface CheckTicketModalProps {
   isOpen: boolean;
@@ -14,33 +14,44 @@ export const CheckTicketModal: React.FC<CheckTicketModalProps> = ({
   onClose,
   onSelectTicket,
 }) => {
-  const [bookingId, setBookingId] = useState('');
-  const [phone, setPhone] = useState('');
-  const [searchError, setSearchError] = useState('');
+  const [bookingId, setBookingId] = useState("");
+  const [phone, setPhone] = useState("");
+  const [searchError, setSearchError] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchError('');
+    setSearchError("");
 
     if (!bookingId.trim() || !phone.trim()) {
-      setSearchError('Masukkan Booking ID dan nomor WhatsApp yang digunakan saat memesan.');
+      setSearchError(
+        "Masukkan Booking ID dan nomor WhatsApp yang digunakan saat memesan.",
+      );
       return;
     }
 
     setIsSearching(true);
     try {
-      const found = await lookupReservation(bookingId.trim().replace(/^#/, ''), phone.trim());
+      const found = await lookupReservation(
+        bookingId.trim().replace(/^#/, ""),
+        phone.trim(),
+      );
       if (!found) {
-        setSearchError('Tiket tidak ditemukan. Pastikan Booking ID dan nomor WhatsApp sesuai.');
+        setSearchError(
+          "Tiket tidak ditemukan. Pastikan Booking ID dan nomor WhatsApp sesuai.",
+        );
         return;
       }
       onSelectTicket(found);
       onClose();
     } catch (error) {
-      setSearchError(error instanceof Error ? error.message : 'Gagal mencari tiket. Coba lagi.');
+      setSearchError(
+        error instanceof Error
+          ? error.message
+          : "Gagal mencari tiket. Coba lagi.",
+      );
     } finally {
       setIsSearching(false);
     }
@@ -53,7 +64,9 @@ export const CheckTicketModal: React.FC<CheckTicketModalProps> = ({
         <div className="bg-[#30231f] text-white p-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Ticket className="w-5 h-5 text-[#D98A45]" />
-            <span className="font-display text-base font-bold">Cek E-Tiket Reservasi</span>
+            <span className="font-display text-base font-bold">
+              Cek Booking Reservasi
+            </span>
           </div>
           <button
             onClick={onClose}
@@ -66,7 +79,8 @@ export const CheckTicketModal: React.FC<CheckTicketModalProps> = ({
         {/* Content */}
         <div className="p-6 space-y-4">
           <p className="text-xs text-[#635e53]">
-            Untuk melindungi detail reservasi, masukkan Booking ID dan nomor WhatsApp yang digunakan saat pemesanan.
+            Untuk melindungi detail reservasi, masukkan Booking ID dan nomor
+            WhatsApp yang digunakan saat pemesanan.
           </p>
 
           <form onSubmit={handleSearch} className="space-y-3">
@@ -101,10 +115,9 @@ export const CheckTicketModal: React.FC<CheckTicketModalProps> = ({
               disabled={isSearching}
               className="w-full py-2.5 rounded-xl bg-[#D98A45] hover:bg-[#C27734] disabled:opacity-60 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
             >
-              {isSearching ? 'Mencari...' : 'Cari E-Tiket Saya'}
+              {isSearching ? "Mencari..." : "Cari Booking Saya"}
             </button>
           </form>
-
         </div>
       </div>
     </div>
