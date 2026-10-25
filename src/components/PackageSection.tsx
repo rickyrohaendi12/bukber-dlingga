@@ -127,9 +127,7 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
 
                     {/* Pricing */}
                     <div className="my-5 pb-5 border-b border-[#E7DFD4]">
-                      <span className="text-xs text-[#635e53]">
-                        Mulai dari
-                      </span>
+                      <span className="text-xs text-[#635e53]">Mulai dari</span>
                       <div className="flex items-baseline gap-1 mt-0.5">
                         <span className="font-display text-2xl font-extrabold text-[#1a0f0b] sm:text-3xl">
                           Rp{pkg.price.toLocaleString("id-ID")}
