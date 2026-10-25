@@ -24,6 +24,7 @@ export interface MenuItem {
   description: string;
   isPopular?: boolean;
   isVip?: boolean;
+  isLimited?: boolean;
   features: string[];
 }
 

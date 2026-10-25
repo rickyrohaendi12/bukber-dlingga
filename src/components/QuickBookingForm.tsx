@@ -292,7 +292,17 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                     required
                     type="number"
                   />
-                  <p className="mt-1.5 text-sm text-[#4f4542]">Minimal 2, maksimal 12 orang.</p>
+                  <p className="mt-1.5 text-sm text-[#4f4542]">
+                    Minimal 2, maksimal 12 orang. Untuk rombongan lebih besar,{" "}
+                    <a
+                      href="https://wa.me/6282129211422?text=Halo%20Admin%20D%27Lingga%20Coffee,%20saya%20ingin%20reservasi%20untuk%20rombongan%20lebih%20dari%2012%20orang."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-[#187344] underline underline-offset-2 hover:text-[#125c36]"
+                    >
+                      chat admin via WhatsApp.
+                    </a>
+                  </p>
                 </div>
                 </div>
               </fieldset>

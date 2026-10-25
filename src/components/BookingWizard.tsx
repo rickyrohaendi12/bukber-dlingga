@@ -364,6 +364,19 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     </button>
                   </div>
                 </div>
+                {pax >= 12 && (
+                  <p className="basis-full text-sm leading-relaxed text-[#4f4542]">
+                    Reservasi online maksimal 12 orang.{" "}
+                    <a
+                      href="https://wa.me/6282129211422?text=Halo%20Admin%20D%27Lingga%20Coffee,%20saya%20ingin%20reservasi%20untuk%20rombongan%20lebih%20dari%2012%20orang."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-[#187344] underline underline-offset-2 hover:text-[#125c36]"
+                    >
+                      Hubungi admin untuk rombongan lebih besar.
+                    </a>
+                  </p>
+                )}
               </div>
 
               {/* Time Slots Chips */}

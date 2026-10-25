@@ -172,7 +172,7 @@ export const MENU_PACKAGES: MenuItem[] = [
     category: "package",
     price: 30000,
     minPax: 4,
-    isPopular: true,
+    // isPopular: true,
     description:
       "Pilihan seimbang untuk tim kantor, reuni alumni, dan keluarga besar.",
     features: [
@@ -188,7 +188,7 @@ export const MENU_PACKAGES: MenuItem[] = [
     category: "package",
     price: 45000,
     minPax: 4,
-    isVip: true,
+    isLimited: true,
     description:
       "Hidangan eksklusif bintang lima dengan pelayanan prioritas tanpa antre.",
     features: [
@@ -204,7 +204,7 @@ export const MENU_PACKAGES: MenuItem[] = [
     category: "package",
     price: 35000,
     minPax: 4,
-    isVip: true,
+    isLimited: true,
     description:
       "Hidangan eksklusif bintang lima dengan pelayanan prioritas tanpa antre.",
     features: [

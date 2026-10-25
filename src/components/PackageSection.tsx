@@ -57,6 +57,7 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
           {packages.map((pkg) => {
             const isPopular = pkg.isPopular;
             const isVip = pkg.isVip;
+            const isLimited = pkg.isLimited;
 
             return (
               <div
@@ -98,6 +99,11 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
                         <span className="text-[#D98A45] text-xs font-bold flex items-center gap-1">
                           <Users className="w-4 h-4" />
                           Paling Diminati
+                        </span>
+                      ) : isLimited ? (
+                        <span className="text-[#1a0f0b] text-xs font-bold flex items-center gap-1">
+                          <Sparkles className="w-4 h-4 text-[#D98A45]" />
+                          Terbatas
                         </span>
                       ) : isVip ? (
                         <span className="text-[#1a0f0b] text-xs font-bold flex items-center gap-1">
@@ -165,7 +171,7 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
                     className={`w-full inline-flex justify-center items-center gap-2 py-3 rounded-lg font-semibold text-sm transition-all active:scale-98 cursor-pointer ${
                       isPopular
                         ? "bg-[#D98A45] hover:bg-[#C27734] text-white shadow-md"
-                        : isVip
+                        : isVip || isLimited
                           ? "bg-[#30231f] hover:bg-[#1a0f0b] text-white shadow-sm"
                           : "bg-[#faebe2] hover:bg-[#e7dfd1] text-[#1a0f0b] border border-[#E7DFD4]"
                     }`}

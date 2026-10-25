@@ -58,7 +58,7 @@ export const Hero: React.FC<HeroProps> = ({
             >
               <Star className="w-4 h-4 text-[#D98A45] fill-[#D98A45]" />
               <span className="text-xs font-semibold uppercase tracking-wider text-[#635e53]">
-                Ramadan 1446 H Special
+                Ramadan 1448 H Special
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#D98A45]" />
               <span className="text-xs font-bold text-[#D98A45]">
