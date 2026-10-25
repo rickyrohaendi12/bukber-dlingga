@@ -80,17 +80,41 @@ export const TicketView: React.FC<TicketViewProps> = ({
     }
   };
 
-  const waText = encodeURIComponent(
-    `Halo Admin Bukber Lounge, saya sudah mengajukan reservasi dengan Booking ID #${reservation.bookingId} atas nama ${reservation.customerName} (Meja ${reservation.tableId}). Mohon bantuannya untuk verifikasi konfirmasi. Terima kasih!`,
+  const formatPrice = (amount: number) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  const orderedPackages = selectedPackageItems.map(
+    ({ item, packageId, quantity }) =>
+      `- ${item?.name ?? packageId} × ${quantity} paket`,
   );
+  const orderedAddons = Object.entries(reservation.addons)
+    .map(([addonId, quantity]) => {
+      const addon = addons.find((item) => item.id === addonId);
+      return addon ? `- ${addon.name} × ${quantity}` : null;
+    })
+    .filter((item): item is string => item !== null);
   const depositAmount = Math.ceil(reservation.totalAmount / 2);
   const paymentProofMessage = encodeURIComponent(
     [
-      `Halo Admin D'Lingga Coffee, saya ingin mengirim bukti pembayaran DP 50% untuk reservasi.`,
+      `Halo Admin D'Lingga Coffee, saya sudah membayar DP 50% untuk reservasi.`,
       "",
       `Booking ID: ${reservation.bookingId}`,
       `Nama: ${reservation.customerName}`,
-      `Nominal DP: Rp${depositAmount.toLocaleString("id-ID")}`,
+      `No. WhatsApp: ${reservation.customerPhone}`,
+      `Tanggal: ${formatIndoDate(reservation.date)}`,
+      `Waktu: ${reservation.timeSlot}`,
+      `Jumlah tamu: ${reservation.pax} orang`,
+      `Meja: ${selectedTable?.name ?? reservation.tableId}`,
+      "Pilihan menu:",
+      ...orderedPackages,
+      "Menu tambahan:",
+      ...(orderedAddons.length > 0 ? orderedAddons : ["- Tidak ada"]),
+      `Catatan: ${reservation.notes?.trim() || "-"}`,
+      `Total reservasi: ${formatPrice(reservation.totalAmount)}`,
+      `Nominal DP 50%: ${formatPrice(depositAmount)}`,
       "",
       "Saya lampirkan bukti pembayaran pada chat ini. Mohon konfirmasi setelah pembayaran diterima.",
     ].join("\n"),
@@ -153,10 +177,10 @@ export const TicketView: React.FC<TicketViewProps> = ({
             {isDpPaid
               ? "pembayaran DP reservasi buka puasa bersamamu telah dikonfirmasi oleh admin."
               : isAwaitingDp
-                ? "reservasi buka puasa bersamamu telah disetujui. Silakan selesaikan pembayaran DP 50% melalui instruksi QRIS yang dikirim admin via WhatsApp."
+                ? "reservasi buka puasa bersamamu telah disetujui. Setelah QRIS merchant yang valid tersedia, silakan bayar DP 50% dan kirim bukti pembayarannya melalui WhatsApp."
                 : isCancelled
                 ? "reservasi buka puasa bersamamu telah dibatalkan."
-                : "pengajuan reservasi buka puasa bersamamu telah kami terima dan sedang diverifikasi admin."}
+                : "pengajuan reservasi buka puasa bersamamu telah kami terima. Setelah QRIS merchant yang valid tersedia, silakan bayar DP 50% dan kirim bukti pembayarannya melalui WhatsApp."}
           </p>
         </section>
 
@@ -226,10 +250,10 @@ export const TicketView: React.FC<TicketViewProps> = ({
                 {isDpPaid
                   ? "Pembayaran DP Anda telah diverifikasi admin"
                   : isAwaitingDp
-                    ? "Booking disetujui. Selesaikan pembayaran DP 50% melalui QRIS yang dikirim admin via WhatsApp"
+                    ? "Booking disetujui. Setelah QRIS merchant valid tersedia, bayar DP 50% dan kirim bukti melalui WhatsApp"
                     : isCancelled
                     ? "Hubungi admin jika Anda memerlukan informasi lebih lanjut"
-                    : "Admin akan mengonfirmasi meja Anda dalam 15-30 menit via WhatsApp"}
+                    : "Setelah QRIS merchant valid tersedia, bayar DP 50% dan kirim bukti pembayaran melalui WhatsApp"}
               </p>
             </div>
 
@@ -392,8 +416,9 @@ export const TicketView: React.FC<TicketViewProps> = ({
                     DP 50% · Rp{depositAmount.toLocaleString("id-ID")}
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[#635e53]">
-                    Setelah melakukan pembayaran, kirim bukti transfer melalui
-                    WhatsApp dengan mencantumkan Booking ID{" "}
+                    Setelah membayar DP 50% menggunakan QRIS merchant yang
+                    valid, kirim bukti pembayaran melalui WhatsApp dengan
+                    mencantumkan Booking ID{" "}
                     <strong className="text-[#1a0f0b]">#{reservation.bookingId}</strong>.
                   </p>
                 </div>
@@ -460,17 +485,6 @@ export const TicketView: React.FC<TicketViewProps> = ({
               <span>Ubah Pesanan</span>
             </button>
           )}
-          {/* Primary Action: WhatsApp Admin Instant Confirmation */}
-          <a
-            href={`https://wa.me/6282129211422?text=${waText}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all active:scale-98"
-          >
-            <MessageCircle className="w-5 h-5 fill-current" />
-            <span>Konfirmasi Cepat via WhatsApp</span>
-          </a>
-
           {/* Secondary Action: Back to Home */}
           <button
             onClick={onBackToHome}

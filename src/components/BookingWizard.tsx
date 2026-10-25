@@ -209,51 +209,10 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       totalAmount,
     };
 
-    const formatPrice = (amount: number) =>
-      new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0,
-      }).format(amount);
-    const orderedAddons = Object.entries(selectedAddons)
-      .map(([addonId, quantity]) => {
-        const addon = addons.find((item) => item.id === addonId);
-        return addon
-          ? `- ${addon.name} x${quantity}: ${formatPrice(addon.price * quantity)}`
-          : null;
-      })
-      .filter((item): item is string => item !== null);
-    const orderedPackages = Object.entries(packageSelections).map(([id, quantity]) => {
-      const item = packages.find((menuPackage) => menuPackage.id === id);
-      return `${item?.name ?? "A la Carte"} × ${quantity} paket`;
-    });
     setIsSubmitting(true);
     try {
       const savedReservation = await onCompleteBooking(newReservation);
       if (!savedReservation) return;
-
-      const message = [
-        "Halo Admin DLingga Coffee, ada pengajuan booking baru yang perlu dikonfirmasi.",
-        "",
-        `Booking ID: ${savedReservation.bookingId}`,
-        `Nama: ${customerName.trim()}`,
-        `No. WhatsApp: ${customerPhone.trim()}`,
-        `Tanggal: ${date}`,
-        `Waktu: ${timeSlot}`,
-        `Jumlah tamu: ${pax} orang`,
-        `Meja: ${selectedTable?.name ?? selectedTableId}`,
-        "Pilihan menu:",
-        ...orderedPackages.map((item) => `- ${item}`),
-        "Menu tambahan:",
-        ...(orderedAddons.length > 0 ? orderedAddons : ["- Tidak ada"]),
-        `Catatan: ${notes.trim() || "-"}`,
-        `Total: ${formatPrice(totalAmount)}`,
-        "",
-        "Mohon segera tinjau dan konfirmasi booking ini. Terima kasih.",
-      ].join("\n");
-      const whatsappUrl = `https://wa.me/6282129211422?text=${encodeURIComponent(message)}`;
-
-      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     } finally {
       setIsSubmitting(false);
     }
