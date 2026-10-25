@@ -5,10 +5,7 @@ import {
   AddonItem,
   ReservationData,
 } from "../types/reservation";
-import {
-  getTomorrowDate,
-  isTableCapacitySuitable,
-} from "../data/reservations";
+import { getTomorrowDate, isTableCapacitySuitable } from "../data/reservations";
 import {
   Check,
   CheckCircle,
@@ -57,9 +54,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const [date, setDate] = useState(initialDate);
   const [timeSlot, setTimeSlot] = useState("");
   const [pax, setPax] = useState<number>(2);
-  const [packageSelections, setPackageSelections] = useState<Record<string, number>>(
-    () => (initialPackageId ? { [initialPackageId]: 2 } : {}),
-  );
+  const [packageSelections, setPackageSelections] = useState<
+    Record<string, number>
+  >(() => (initialPackageId ? { [initialPackageId]: 2 } : {}));
   const [selectedTableId, setSelectedTableId] = useState("");
   const [selectedAddons, setSelectedAddons] = useState<{
     [addonId: string]: number;
@@ -117,8 +114,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
   // Calculations
   const packageTotal = packages.reduce(
-    (total, item) =>
-      total + item.price * (packageSelections[item.id] ?? 0),
+    (total, item) => total + item.price * (packageSelections[item.id] ?? 0),
     0,
   );
   const addonsTotal = Object.entries(selectedAddons).reduce(
@@ -319,10 +315,14 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     1. Atur jadwal dan jumlah tamu
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
-                    Tentukan jadwal terlebih dahulu untuk melihat meja yang sesuai.
+                    Tentukan jadwal terlebih dahulu untuk melihat meja yang
+                    sesuai.
                   </p>
                 </div>
-                <label htmlFor="wizard-date" className="flex flex-col gap-2 text-base font-semibold text-[#1a0f0b]">
+                <label
+                  htmlFor="wizard-date"
+                  className="flex flex-col gap-2 text-base font-semibold text-[#1a0f0b]"
+                >
                   Tanggal kedatangan
                   <input
                     id="wizard-date"
@@ -372,32 +372,32 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   Waktu kedatangan <span className="text-[#9a5929]">*</span>
                 </legend>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                {[
-                  "16.30 WIB",
-                  "17.00 WIB",
-                  "17.30 - 19.30 WIB",
-                  "18.30 WIB",
-                ].map((slot) => {
-                  const isSelected = timeSlot === slot;
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => {
-                        setTimeSlot(slot);
-                        setFormError("");
-                      }}
-                      aria-pressed={isSelected}
-                      className={`min-h-12 rounded-xl border px-3 py-3 text-base font-semibold text-center transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] ${
-                        isSelected
-                          ? "bg-[#30231f] text-white border-[#30231f] shadow-xs"
-                          : "bg-white text-[#635e53] border-[#E7DFD4] hover:border-[#D98A45]"
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  );
-                })}
+                  {[
+                    "16.30 WIB",
+                    "17.00 WIB",
+                    "17.30 - 19.30 WIB",
+                    "18.30 WIB",
+                  ].map((slot) => {
+                    const isSelected = timeSlot === slot;
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => {
+                          setTimeSlot(slot);
+                          setFormError("");
+                        }}
+                        aria-pressed={isSelected}
+                        className={`min-h-12 rounded-xl border px-3 py-3 text-base font-semibold text-center transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] ${
+                          isSelected
+                            ? "bg-[#30231f] text-white border-[#30231f] shadow-xs"
+                            : "bg-white text-[#635e53] border-[#E7DFD4] hover:border-[#D98A45]"
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    );
+                  })}
                 </div>
               </fieldset>
             </div>
@@ -409,7 +409,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   2. Pilih meja
                 </h3>
                 <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
-                  Pilih meja tersedia dengan kapasitas yang cukup untuk {pax} orang. Meja diurutkan dari kapasitas terkecil.
+                  Pilih meja tersedia dengan kapasitas yang cukup untuk {pax}{" "}
+                  orang. Meja diurutkan dari kapasitas terkecil.
                 </p>
               </div>
 
@@ -442,7 +443,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 ))}
               </select>
               <p className="mt-2 text-sm leading-relaxed text-[#4f4542]">
-                Pilihan menampilkan semua meja yang tersedia dan cukup untuk jumlah tamu.
+                Pilihan menampilkan semua meja yang tersedia dan cukup untuk
+                jumlah tamu.
               </p>
               {capacitySuitableTables.length === 0 && (
                 <p className="mt-3 rounded-lg bg-[#FBEEEE] p-3 text-xs text-[#A8544E]">
@@ -495,7 +497,10 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   Pilih minimal satu paket per tamu. Anda boleh memesan paket
                   tambahan melebihi jumlah tamu.
                 </p>
-                <p className="mt-2 text-sm font-semibold leading-relaxed text-[#8c4d20]" aria-live="polite">
+                <p
+                  className="mt-2 text-sm font-semibold leading-relaxed text-[#8c4d20]"
+                  aria-live="polite"
+                >
                   {selectedPackageCount} paket dipilih untuk {pax} tamu
                   {selectedPackageCount < pax
                     ? ` · Tambahkan minimal ${pax - selectedPackageCount} paket lagi`
@@ -695,15 +700,21 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     </p>
                   )}
                   {Object.entries(packageSelections).map(([id, quantity]) => {
-                    const item = packages.find((menuPackage) => menuPackage.id === id);
+                    const item = packages.find(
+                      (menuPackage) => menuPackage.id === id,
+                    );
                     const unitPrice = item?.price ?? 0;
                     const label = item?.name ?? id;
                     return (
-                      <div key={id} className="flex justify-between items-start">
+                      <div
+                        key={id}
+                        className="flex justify-between items-start"
+                      >
                         <div>
                           <p className="font-bold text-[#1a0f0b]">{label}</p>
                           <p className="text-[11px] text-[#635e53]">
-                            {quantity} paket × Rp{unitPrice.toLocaleString("id-ID")}
+                            {quantity} paket × Rp
+                            {unitPrice.toLocaleString("id-ID")}
                           </p>
                         </div>
                         <span className="font-bold text-[#1a0f0b]">
@@ -744,9 +755,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                         <span className="text-xs text-[#635e53] font-semibold block">
                           Total Estimasi
                         </span>
-                        <span className="text-[10px] text-[#71916B]">
+                        {/* <span className="text-[10px] text-[#71916B]">
                           Termasuk Takjil Kurma & Teh Hangat Gratis
-                        </span>
+                        </span> */}
                       </div>
                       <span className="font-display text-2xl font-bold text-[#D98A45]">
                         Rp{totalAmount.toLocaleString("id-ID")}
@@ -768,7 +779,10 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 </div>
 
                 <div>
-                  <label htmlFor="wizard-customer-name" className="mb-2 block text-base font-semibold text-[#1a0f0b]">
+                  <label
+                    htmlFor="wizard-customer-name"
+                    className="mb-2 block text-base font-semibold text-[#1a0f0b]"
+                  >
                     Nama lengkap <span className="text-[#9a5929]">*</span>
                   </label>
                   <div className="relative">
@@ -785,13 +799,20 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       maxLength={120}
                       required
                     />
-                    <User className="absolute left-3 top-3.5 h-5 w-5 text-[#635e53]" aria-hidden="true" />
+                    <User
+                      className="absolute left-3 top-3.5 h-5 w-5 text-[#635e53]"
+                      aria-hidden="true"
+                    />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="wizard-customer-phone" className="mb-2 block text-base font-semibold text-[#1a0f0b]">
-                    Nomor WhatsApp aktif <span className="text-[#9a5929]">*</span>
+                  <label
+                    htmlFor="wizard-customer-phone"
+                    className="mb-2 block text-base font-semibold text-[#1a0f0b]"
+                  >
+                    Nomor WhatsApp aktif{" "}
+                    <span className="text-[#9a5929]">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -808,7 +829,10 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       maxLength={20}
                       required
                     />
-                    <Phone className="absolute left-3 top-3.5 h-5 w-5 text-[#635e53]" aria-hidden="true" />
+                    <Phone
+                      className="absolute left-3 top-3.5 h-5 w-5 text-[#635e53]"
+                      aria-hidden="true"
+                    />
                   </div>
                   <p className="mt-1.5 text-sm leading-relaxed text-[#4f4542]">
                     Konfirmasi reservasi akan dikirim melalui WhatsApp ini.
@@ -816,8 +840,14 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 </div>
 
                 <div>
-                  <label htmlFor="wizard-notes" className="mb-2 block text-base font-semibold text-[#1a0f0b]">
-                    Catatan tambahan <span className="font-normal text-[#4f4542]">(opsional)</span>
+                  <label
+                    htmlFor="wizard-notes"
+                    className="mb-2 block text-base font-semibold text-[#1a0f0b]"
+                  >
+                    Catatan tambahan{" "}
+                    <span className="font-normal text-[#4f4542]">
+                      (opsional)
+                    </span>
                   </label>
                   <textarea
                     id="wizard-notes"
