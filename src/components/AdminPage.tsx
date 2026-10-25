@@ -887,7 +887,7 @@ export const AdminPage: React.FC = () => {
                             >
                               <div>
                                 <p className="font-semibold text-[#1a0f0b]">
-                                  {item?.name ?? "A la Carte"}
+                                  {item?.name ?? packageId}
                                   <span className="ml-1 text-xs font-normal text-[#635e53]">
                                     × {quantity} paket
                                   </span>
@@ -906,7 +906,7 @@ export const AdminPage: React.FC = () => {
                                   </ul>
                                 ) : (
                                   <p className="mt-1 text-xs text-[#8a7d73]">
-                                    Menu dipilih melalui item A la Carte.
+                                    Detail menu tidak tersedia.
                                   </p>
                                 )}
                               </div>

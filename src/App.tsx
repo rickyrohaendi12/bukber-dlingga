@@ -108,7 +108,7 @@ function PublicApp() {
   );
 
   // Preselection for wizard
-  const [preselectedPackageId, setPreselectedPackageId] = useState<string>('paket-rame-rame');
+  const [preselectedPackageId, setPreselectedPackageId] = useState<string>('');
   const [selectedFloor, setSelectedFloor] = useState<1 | 2>(1);
 
   // Check Ticket Modal
@@ -159,13 +159,12 @@ function PublicApp() {
 
   // Handlers
   const handleStartBooking = (packageId?: string) => {
-    if (packageId) setPreselectedPackageId(packageId);
+    setPreselectedPackageId(packageId ?? '');
     setCurrentView('wizard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectPackageFromLanding = (packageId: string) => {
-    setPreselectedPackageId(packageId);
     handleStartBooking(packageId);
   };
 

@@ -44,7 +44,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   tables,
   packages,
   addons,
-  initialPackageId = "paket-rame-rame",
+  initialPackageId = "",
   initialDate,
   onDateChange,
   onBack,
@@ -58,7 +58,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   const [timeSlot, setTimeSlot] = useState("");
   const [pax, setPax] = useState<number>(2);
   const [packageSelections, setPackageSelections] = useState<Record<string, number>>(
-    () => ({ [initialPackageId]: 2 }),
+    () => (initialPackageId ? { [initialPackageId]: 2 } : {}),
   );
   const [selectedTableId, setSelectedTableId] = useState("");
   const [selectedAddons, setSelectedAddons] = useState<{
@@ -266,8 +266,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 STEP 2 • MENU
               </p>
               <p className="text-xs font-semibold text-[#1a0f0b] truncate">
-                {selectedPackageItems.length + (packageSelections["a-la-carte"] ? 1 : 0) > 0
-                  ? `${selectedPackageItems.length + (packageSelections["a-la-carte"] ? 1 : 0)} pilihan menu`
+                {selectedPackageItems.length > 0
+                  ? `${selectedPackageItems.length} pilihan menu`
                   : "Belum memilih menu"}
               </p>
             </div>
@@ -558,49 +558,6 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     </div>
                   );
                 })}
-                <div
-                  className={`rounded-xl border p-4 transition ${
-                    (packageSelections["a-la-carte"] ?? 0) > 0
-                      ? "border-[#D98A45] bg-[#FFF8F2] ring-2 ring-[#D98A45]/15"
-                      : "border-[#E7DFD4] hover:border-[#D98A45]"
-                  }`}
-                >
-                  <span className="flex items-start justify-between gap-2">
-                    <span className="text-base font-bold text-[#1a0f0b]">
-                      Paket A La Carte
-                    </span>
-                    <span className="text-xs font-semibold text-[#D98A45]">
-                      Pilih item menu
-                    </span>
-                  </span>
-                  <span className="mt-2 block text-sm leading-relaxed text-[#4f4542]">
-                    Pilih paket A la Carte untuk tiap porsi yang ingin dipesan,
-                    lalu pilih minuman atau camilan di bawah jika diperlukan.
-                  </span>
-                  <div className="mt-3 flex items-center justify-end gap-2 border-t border-[#E7DFD4] pt-3">
-                    <button
-                      type="button"
-                      aria-label="Kurangi jumlah paket A la Carte"
-                      disabled={!packageSelections["a-la-carte"]}
-                      onClick={() => handlePackageQty("a-la-carte", -1)}
-                      className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#cfc4b7] text-[#1a0f0b] hover:bg-[#F8F5F0] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
-                    >
-                      <Minus className="h-3.5 w-3.5" />
-                    </button>
-                    <span className="min-w-16 text-center text-sm font-bold text-[#1a0f0b]">
-                      {packageSelections["a-la-carte"] ?? 0} paket
-                    </span>
-                    <button
-                      type="button"
-                      aria-label="Tambah jumlah paket A la Carte"
-                      disabled={(packageSelections["a-la-carte"] ?? 0) >= 30}
-                      onClick={() => handlePackageQty("a-la-carte", 1)}
-                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#9a5929] text-white hover:bg-[#78451f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
               </div>
             </section>
 
@@ -740,23 +697,18 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   {Object.entries(packageSelections).map(([id, quantity]) => {
                     const item = packages.find((menuPackage) => menuPackage.id === id);
                     const unitPrice = item?.price ?? 0;
-                    const isALaCarte = id === "a-la-carte";
-                    const label = item?.name ?? "Paket A La Carte";
+                    const label = item?.name ?? id;
                     return (
                       <div key={id} className="flex justify-between items-start">
                         <div>
                           <p className="font-bold text-[#1a0f0b]">{label}</p>
                           <p className="text-[11px] text-[#635e53]">
-                            {isALaCarte
-                              ? `${quantity} paket · harga sesuai item tambahan`
-                              : `${quantity} paket × Rp${unitPrice.toLocaleString("id-ID")}`}
+                            {quantity} paket × Rp{unitPrice.toLocaleString("id-ID")}
                           </p>
                         </div>
-                        {!isALaCarte && (
-                          <span className="font-bold text-[#1a0f0b]">
-                            Rp{(unitPrice * quantity).toLocaleString("id-ID")}
-                          </span>
-                        )}
+                        <span className="font-bold text-[#1a0f0b]">
+                          Rp{(unitPrice * quantity).toLocaleString("id-ID")}
+                        </span>
                       </div>
                     );
                   })}

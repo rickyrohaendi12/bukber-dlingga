@@ -12,8 +12,6 @@ import {
 } from "lucide-react";
 
 const packageImages: Record<string, string> = {
-  "a-la-carte":
-    "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85",
   "paket-hemat":
     "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85",
   "paket-rame-rame":
@@ -31,21 +29,6 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
   packages,
   onSelectPackage,
 }) => {
-  const aLaCartePackage: MenuItem = {
-    id: "a-la-carte",
-    name: "Paket A La Carte",
-    category: "package",
-    price: 0,
-    description:
-      "Pilih minuman dan camilan sesuai selera. Total harga dihitung dari item yang dipesan.",
-    features: [
-      "Pilih item menu sesuai keinginan",
-      "Minuman segar dan camilan",
-      "Harga menyesuaikan pilihan",
-    ],
-  };
-  const displayedPackages = [...packages, aLaCartePackage];
-
   return (
     <section
       className="py-16 md:py-20 bg-white border-b border-[#E7DFD4]"
@@ -71,10 +54,9 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
 
         {/* Package Cards */}
         <div className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {displayedPackages.map((pkg) => {
+          {packages.map((pkg) => {
             const isPopular = pkg.isPopular;
             const isVip = pkg.isVip;
-            const isALaCarte = pkg.id === "a-la-carte";
 
             return (
               <div
@@ -140,21 +122,13 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
                     {/* Pricing */}
                     <div className="my-5 pb-5 border-b border-[#E7DFD4]">
                       <span className="text-xs text-[#635e53]">
-                        {isALaCarte ? "Harga" : "Mulai dari"}
+                        Mulai dari
                       </span>
                       <div className="flex items-baseline gap-1 mt-0.5">
-                        {isALaCarte ? (
-                          <span className="font-display text-xl font-extrabold text-[#1a0f0b] sm:text-2xl">
-                            Sesuai pilihan
-                          </span>
-                        ) : (
-                          <>
-                            <span className="font-display text-2xl font-extrabold text-[#1a0f0b] sm:text-3xl">
-                              Rp{pkg.price.toLocaleString("id-ID")}
-                            </span>
-                            <span className="text-xs text-[#635e53]">/ orang</span>
-                          </>
-                        )}
+                        <span className="font-display text-2xl font-extrabold text-[#1a0f0b] sm:text-3xl">
+                          Rp{pkg.price.toLocaleString("id-ID")}
+                        </span>
+                        <span className="text-xs text-[#635e53]">/ orang</span>
                       </div>
                     </div>
 
@@ -196,7 +170,7 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
                           : "bg-[#faebe2] hover:bg-[#e7dfd1] text-[#1a0f0b] border border-[#E7DFD4]"
                     }`}
                   >
-                    <span>{isALaCarte ? "Pilih Menu & Jadwal" : "Pilih Paket & Jadwal"}</span>
+                    <span>Pilih Paket & Jadwal</span>
                     {isPopular ? (
                       <Calendar className="w-4 h-4" />
                     ) : (

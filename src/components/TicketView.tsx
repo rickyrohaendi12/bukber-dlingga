@@ -348,7 +348,7 @@ export const TicketView: React.FC<TicketViewProps> = ({
                           >
                             <div>
                               <p className="font-semibold text-[#1a0f0b]">
-                                {item?.name ?? "A la Carte"} ({quantity} paket)
+                                {item?.name ?? packageId} ({quantity} paket)
                               </p>
                               {item && (
                                 <p className="text-[10px] text-[#635e53]">

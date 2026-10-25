@@ -15,8 +15,6 @@ interface EditReservationOrderModalProps {
   ) => Promise<ReservationData>;
 }
 
-const A_LA_CARTE_ID = "a-la-carte";
-
 const getEditErrorMessage = (error: unknown) => {
   const message = error instanceof Error ? error.message : "";
   if (message.includes("RESERVATION_EDIT_WINDOW_CLOSED")) {
@@ -222,23 +220,6 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
                   </div>
                 );
               })}
-              <div className="flex items-center justify-between gap-3 border-t border-[#F0EAE4] pt-3">
-                <div>
-                  <p className="font-semibold text-[#1a0f0b]">Paket A La Carte</p>
-                  <p className="text-xs text-[#635e53]">Harga sesuai item tambahan</p>
-                </div>
-                <QuantityControl
-                  label="Paket A La Carte"
-                  quantity={packageSelections[A_LA_CARTE_ID] ?? 0}
-                  min={0}
-                  max={30}
-                  canDecrease={(packageSelections[A_LA_CARTE_ID] ?? 0) > 0}
-                  canIncrease={(packageSelections[A_LA_CARTE_ID] ?? 0) < 30}
-                  onChange={(nextQuantity) =>
-                    updatePackageQuantity(A_LA_CARTE_ID, nextQuantity)
-                  }
-                />
-              </div>
             </div>
             <p className="mt-3 text-xs leading-relaxed text-[#635e53]">
               Minimal pesan satu paket per tamu. Jumlah paket boleh melebihi
