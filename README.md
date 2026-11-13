@@ -1,119 +1,114 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# ☕ D'Lingga Coffee — Reservation Platform
 
-# D'Lingga Coffee
+![CI](https://github.com/rickyrohaendi12/bukber-dlingga/actions/workflows/ci.yml/badge.svg)
 
-Reservasi tersimpan di Supabase dan dapat diakses lintas perangkat.
+A full-stack table reservation system for a coffee shop (buka bersama / group bookings), with an admin panel, DP (deposit) payment flow, and server-side validation. Built as a real-world project **and** as a DevOps playground: containerized, scanned, and shipped by a CI pipeline.
 
-## Menyiapkan Supabase
+🌐 **Live Website:** [bukber-dlingga.vercel.app](https://bukber-dlingga.vercel.app)
 
-1. Buat project di [Supabase](https://supabase.com/).
-2. Buka SQL Editor di dashboard, lalu jalankan isi file
-   [supabase/migrations/20261019000000_create_reservations.sql](./supabase/migrations/20261019000000_create_reservations.sql).
-3. Salin [.env.example](./.env.example) menjadi `.env.local`, lalu isi `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` dari **Project Settings → API**.
-4. Jangan pernah menaruh `service_role` key di frontend atau di environment variable berawalan `VITE_`.
+## ✨ What it does
 
-Migration membuat tabel reservasi, validasi dan perhitungan harga di database,
-pencegahan booking meja ganda secara atomik, RPC untuk booking/pencarian tiket/
-perubahan status, serta kebijakan akses Supabase. Daftar dan perubahan status
-reservasi hanya tersedia untuk akun Supabase yang memiliki role admin di
-`app_metadata`.
+- Multi-step booking wizard: pick date, table, and a **mix of menu packages** per reservation
+- Prices and package rules **recalculated in the database**, never trusted from the client
+- **Atomic double-booking prevention** for the same table and date
+- Ticket lookup using Booking ID + WhatsApp number
+- Admin panel: approve bookings, send DP 50% instructions (QRIS), confirm payment
+- WhatsApp hand-off for booking and approval messages
+- Reservation rules enforced in Jakarta local time
 
-Di wizard booking, pelanggan dapat membagi tamu ke beberapa pilihan menu dalam
-satu reservasi, misalnya 1 Paket Hemat, 2 Paket Premium Sultan, dan 1 A la
-Carte. Jumlah paket minimal harus sama dengan jumlah tamu, tetapi pelanggan
-boleh memesan paket tambahan melebihi jumlah tamu. Jumlah tamu tetap menentukan
-kapasitas meja. A la Carte tidak memiliki harga dasar paket dan item
-minuman/camilan tambahan bersifat opsional. Setiap paket bisa dipesan mulai
-dari satu item; jumlah minimum reservasi keseluruhan tetap dua tamu. Harga
-paket dan add-on dihitung ulang di database.
+## 🛠️ Tech Stack
 
-Reservasi hanya dapat dibuat mulai satu hari sebelum tanggal kedatangan.
-Formulir dan validasi database menggunakan waktu lokal Jakarta untuk aturan ini.
+| Layer         | Technology                                              |
+| ------------- | ------------------------------------------------------- |
+| Frontend      | React, TypeScript, Vite, pnpm                           |
+| Backend / DB  | Supabase (Postgres, RPC functions, Row Level Security)  |
+| Auth          | Supabase Auth (admin role via `app_metadata`)           |
+| Hosting       | Vercel (live site)                                      |
+| Container     | Docker (multi-stage), Nginx unprivileged                |
+| CI/CD         | GitHub Actions                                          |
+| Security      | Trivy (image scan), Gitleaks, Dependabot                |
+| Registry      | GitHub Container Registry (GHCR)                        |
 
-Jika project sudah menjalankan migration versi sebelumnya, jalankan kembali
-seluruh isi file migration terbaru yang sama di SQL Editor. Migration ini
-menyimpan pilihan per paket, memperbarui fungsi `create_reservation`, dan
-menghapus minimum tamu per jenis paket; jalankan sebelum memakai aturan baru.
+## 🔐 Security & Data Design
 
-Setelah migration dijalankan:
+- **Row Level Security:** the `anon` role can only create bookings, view occupied tables by date, and look up a ticket with a Booking ID + phone pair. It cannot list reservations or change status.
+- **Admin enforced server-side:** RLS policies and database functions verify the admin role. Hiding the admin route in the frontend is not the only protection.
+- **No privileged keys in the frontend:** only the public anon key is used; the `service_role` key is never exposed through `VITE_*` variables.
+- **Versioned SQL migrations** in `supabase/migrations/` describe every schema change (reservation table, DP payment status, booking ID format, table capacity rules).
+- **Privacy-aware Booking ID:** it contains customer details, so users are warned not to share tickets publicly.
 
-1. Buat akun email/password admin melalui **Authentication → Users** di
-   dashboard Supabase. Jangan sediakan pendaftaran admin dari aplikasi.
-2. Beri role admin pada akun tersebut melalui SQL Editor (ganti alamat email):
+## ⚙️ DevOps
 
-   ```sql
-   update auth.users
-   set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'::jsonb
-   where email = 'admin@example.com';
-   ```
+### Architecture
 
-3. Nonaktifkan pendaftaran publik di **Authentication → Settings**. Setelah
-   mengubah role, keluar lalu masuk kembali agar token memuat role terbaru.
+```mermaid
+flowchart LR
+  Dev[Developer] -->|push / PR| GH[GitHub]
+  GH --> Vercel[Vercel: live site]
+  GH --> CI[GitHub Actions]
+  CI --> T[Typecheck + Build]
+  CI --> S[Gitleaks]
+  T --> D[Docker build]
+  S --> D
+  D --> V[Trivy image scan]
+  V -->|pass, main only| R[(GHCR image)]
+  Vercel --> DB[(Supabase: Postgres + Auth)]
+```
 
-## Menjalankan aplikasi
+### CI/CD pipeline
 
-```sh
+1. **test**: `pnpm install --frozen-lockfile`, `tsc --noEmit`, production build.
+2. **secret-scan**: Gitleaks scans the full commit history.
+3. **docker**: runs after `test` and `secret-scan` pass. It builds the image, scans it with Trivy (fails on fixable HIGH/CRITICAL findings), and pushes to GHCR only on `main`.
+4. **Dependabot** opens weekly PRs for npm, Docker, and GitHub Actions dependencies.
+
+### Run with Docker
+
+```bash
+cp .env.example .env        # fill VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+docker compose up --build
+# open http://localhost:8080
+curl http://localhost:8080/health
+```
+
+### Run without Docker
+
+```bash
 pnpm install
 pnpm dev
 ```
 
-Untuk deploy, atur `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` sebagai
-environment variables pada hosting (termasuk preview dan production), lalu
-build ulang aplikasi.
+### Technical decisions
 
-## Panel Admin
+- **Multi-stage build:** the final image contains only Nginx and the static build output, with no Node.js and no source code.
+- **Non-root, locked-down runtime:** the container runs as a non-root user with a read-only filesystem, all Linux capabilities dropped, and `no-new-privileges` enabled.
+- **Build-time config:** Vite inlines `VITE_*` values at build time, so they are passed as build args. Only public values (Supabase URL and anon key) are used; data safety comes from RLS.
+- **SPA-aware Nginx:** fallback to `index.html` for client-side routes, long-lived caching for hashed assets, basic security headers.
+- **Health endpoint:** `/health` backs the Docker `HEALTHCHECK`.
+- **Quality gate before shipping:** an image is only pushed when typecheck, build, secret scan, and vulnerability scan all pass.
 
-Buka `/admin-dlingga-9746` untuk melihat daftar reservasi, rincian paket dan
-add-on, menyetujui booking, mengirim instruksi DP 50% beserta gambar QRIS, dan
-mengonfirmasi pembayaran DP. Setelah booking disetujui, admin mengunduh gambar
-QRIS dari panel dan melampirkannya sendiri di WhatsApp; WhatsApp tidak dapat
-melampirkan gambar secara otomatis dari tautan pesan. Ganti
-`src/img/qris.jpg` dengan QRIS merchant yang valid sebelum menerima pembayaran.
-Panel dapat memuat ulang data langsung dari Supabase. Masuk dengan akun
-Supabase ber-role admin.
+### Roadmap
 
-Status reservasi berurutan dari menunggu approval, menunggu pembayaran DP,
-hingga DP sudah dibayar. Jalankan migration
-`supabase/migrations/20261026000000_add_deposit_payment_status.sql` secara
-manual melalui SQL Editor Supabase sebelum menggunakan alur pembayaran ini.
-Migration memetakan booking lama berstatus `confirmed` menjadi menunggu
-pembayaran DP karena status pembayaran lamanya tidak tercatat.
+- [x] Dockerfile, Nginx config, and docker-compose
+- [x] CI pipeline with Gitleaks and Trivy
+- [x] Dependabot
+- [x] Publish image to GHCR
+- [ ] Pin GitHub Actions to commit SHAs (supply-chain hardening)
+- [ ] Lint and automated tests in CI
+- [ ] Kubernetes manifests with Kustomize
+- [ ] Terraform local cluster (kind) + Argo CD (GitOps)
+- [ ] Observability with Prometheus and Grafana
+- [ ] Automated Supabase migration checks in CI
 
-Booking ID baru memuat nama pelanggan, nomor WhatsApp, tanggal reservasi, dan
-kode acak pendek. Nomor WhatsApp yang sama tidak dapat membuat reservasi aktif
-lebih dari satu kali pada tanggal yang sama; reservasi yang dibatalkan tidak
-menghalangi pemesanan baru. Karena Booking ID memuat data pribadi, jangan
-membagikan tiket atau tangkapan layar kepada orang lain.
+## 🧰 Local Setup (app)
 
-Untuk menerapkan Booking ID baru dan pencegahan duplikasi, jalankan migration
-`supabase/migrations/20261028000000_use_customer_details_for_booking_id.sql`
-secara manual melalui SQL Editor Supabase setelah migration status DP dan
-perubahan pesanan terbaru.
+1. Create a Supabase project and run the SQL files in `supabase/migrations/` in order.
+2. Copy `.env.example` to `.env.local` and fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+3. Create an admin user in Supabase Auth and grant the admin role through `app_metadata`.
+4. `pnpm install && pnpm dev`
 
-Jalankan juga migration
-`supabase/migrations/20261029000000_allow_any_suitable_table_capacity.sql`
-agar pelanggan dapat memilih meja mana pun yang tersedia dengan kapasitas cukup;
-meja tetap diurutkan dari kapasitas terkecil.
+## 📬 Contact
 
-Untuk mengizinkan jumlah paket melebihi jumlah tamu, jalankan migration
-`supabase/migrations/20261027000000_allow_extra_packages_per_guest.sql`
-secara manual melalui SQL Editor Supabase. Migration memperbarui validasi
-booking dan endpoint edit pesanan; jumlah paket minimal tetap harus sama dengan
-jumlah tamu.
-
-Role `anon` tidak dapat membaca daftar reservasi atau mengubah status. Role
-tersebut hanya dapat membuat booking, melihat meja terisi berdasarkan tanggal,
-dan mencari tiket dengan pasangan Booking ID serta nomor WhatsApp. Kebijakan
-RLS dan fungsi database tetap memverifikasi role admin di server; menyembunyikan
-rute panel di frontend bukan satu-satunya lapisan perlindungan.
-
-Pencarian tiket pada antarmuka meminta kedua nilai tersebut. Booking dan harga
-divalidasi di database; nomor Booking ID dibuat oleh Supabase, dan pemesanan
-meja yang sama pada tanggal yang sama ditolak secara atomik selama statusnya
-menunggu approval, menunggu DP, atau DP sudah dibayar. Data lama yang hanya
-tersimpan di `localStorage` tidak dimigrasikan otomatis; bila perlu, ekspor dan
-impor data lama sebelum menghapusnya.
-
-Saat formulir booking diajukan, aplikasi membuka WhatsApp ke nomor CS yang dikonfigurasi dengan detail reservasi terisi sebagai pesan. Pemesan tetap perlu menekan tombol Kirim di WhatsApp. Saat admin menyetujui booking, WhatsApp terbuka ke nomor pemesan dengan pesan persetujuan; admin perlu menekan Kirim agar pelanggan menerimanya. Pengiriman otomatis tanpa tindakan pengguna memerlukan integrasi WhatsApp Business API di backend.
+- Email: rickyrohaendi1@gmail.com
+- LinkedIn: [linkedin.com/in/ricky-rohaendi](https://www.linkedin.com/in/ricky-rohaendi/)
+- GitHub: [github.com/rickyrohaendi12](https://github.com/rickyrohaendi12)
