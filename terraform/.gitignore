@@ -1,0 +1,7 @@
+# State and kubeconfig contain credentials: never commit them
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+*-config

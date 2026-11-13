@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bukber-dlingga
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: dlingga.localtest.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bukber-dlingga
+                port:
+                  name: http

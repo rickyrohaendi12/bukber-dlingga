@@ -4,6 +4,7 @@ namespace: bukber-dlingga-dev
 resources:
   - ../../base
   - namespace.yaml
+  - ingress.yaml
 labels:
   - pairs:
       app.kubernetes.io/environment: dev

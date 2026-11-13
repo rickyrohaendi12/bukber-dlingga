@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bukber-dlingga-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rickyrohaendi12/bukber-dlingga.git
+    targetRevision: main
+    path: k8s/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bukber-dlingga-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
