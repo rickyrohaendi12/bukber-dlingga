@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: bukber-dlingga-prod
+resources:
+  - ../../base
+  - namespace.yaml
+  - pdb.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/environment: prod
+    includeTemplates: true
+replicas:
+  - name: bukber-dlingga
+    count: 2
+images:
+  - name: ghcr.io/rickyrohaendi12/bukber-dlingga
+    # Pin a commit SHA tag here for reproducible prod releases (CI pushes :<sha>)
+    newTag: latest
+patches:
+  - target:
+      kind: Deployment
+      name: bukber-dlingga
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 256Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 50m

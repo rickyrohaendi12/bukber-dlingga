@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: bukber-dlingga-dev
+resources:
+  - ../../base
+  - namespace.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/environment: dev
+    includeTemplates: true
+images:
+  - name: ghcr.io/rickyrohaendi12/bukber-dlingga
+    newTag: latest
