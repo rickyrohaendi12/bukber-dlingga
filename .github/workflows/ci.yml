@@ -20,6 +20,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec tsc --noEmit
+      - run: pnpm lint
+      - run: pnpm test
       - run: pnpm build
         env:
           VITE_SUPABASE_URL: https://example.supabase.co
