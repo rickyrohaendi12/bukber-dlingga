@@ -35,8 +35,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  k8s-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install kubeconform (retry + checksum)
+        env:
+          KUBECONFORM_VERSION: v0.6.7
+        run: |
+          base="https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}"
+          curl -fsSL --retry 5 --retry-delay 3 -o kubeconform.tar.gz "${base}/kubeconform-linux-amd64.tar.gz"
+          curl -fsSL --retry 5 --retry-delay 3 -o CHECKSUMS "${base}/CHECKSUMS"
+          grep ' kubeconform-linux-amd64.tar.gz$' CHECKSUMS | sed 's/kubeconform-linux-amd64.tar.gz/kubeconform.tar.gz/' | sha256sum -c -
+          tar -xzf kubeconform.tar.gz kubeconform
+          sudo mv kubeconform /usr/local/bin/
+      - name: Render and validate overlays
+        run: |
+          for env in dev prod; do
+            echo "== $env =="
+            kubectl kustomize "k8s/overlays/$env" | kubeconform -strict -summary -ignore-missing-schemas
+          done
+
   docker:
-    needs: [test, secret-scan]
+    needs: [test, secret-scan, k8s-validate]
     runs-on: ubuntu-latest
     permissions:
       contents: read
