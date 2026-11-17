@@ -167,8 +167,8 @@ importers:
   .:
     dependencies:
       '@google/genai':
-        specifier: ^2.4.0
-        version: 2.30.0(supports-color@10.2.2)
+        specifier: ^3.3.0
+        version: 3.3.0(supports-color@10.2.2)
       '@supabase/supabase-js':
         specifier: ^2.118.0
         version: 2.118.0
@@ -617,9 +617,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@google/genai@2.30.0':
-    resolution: {integrity: sha512-Gkv1ix8iZey/V3WF4lHaRS8C71P533jenDT/lA+fdPTCfXYfmCVHvo+0H5jTgzonqsmROQG7QpzLJkpoP/x7bg==}
-    engines: {node: '>=20.0.0'}
+  '@google/genai@3.3.0':
+    resolution: {integrity: sha512-XLjXedj0X8UrULZz1GnlTMSQxBDFdr+NCKZkOBaSVVYqmK30C6FCnKW31Ppn0ItO9DpNspCHFui257kPNpumKQ==}
+    engines: {node: '>=22.0.0'}
     peerDependencies:
       '@modelcontextprotocol/sdk': ^1.25.2
     peerDependenciesMeta:
@@ -2153,7 +2153,7 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@google/genai@2.30.0(supports-color@10.2.2)':
+  '@google/genai@3.3.0(supports-color@10.2.2)':
     dependencies:
       google-auth-library: 10.9.1(supports-color@10.2.2)
       p-retry: 4.6.2
