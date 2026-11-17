@@ -20,11 +20,18 @@
         "useButtonType": "warn",
         "noStaticElementInteractions": "warn",
         "useAriaPropsSupportedByRole": "warn",
-        "noAutofocus": "warn"
+        "noAutofocus": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useGenericFontNames": "warn"
       },
       "suspicious": {
         "noArrayIndexKey": "warn"
       }
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "javascript": {
