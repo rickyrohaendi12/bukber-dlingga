@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Check, CheckCircle2 } from 'lucide-react';
 
 export const FacilitiesBento: React.FC = () => {

@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect } from "react";
-import {
+import type React from "react";
+import { useState, useMemo, useEffect } from "react";
+import type {
   TableItem,
   MenuItem,
   AddonItem,

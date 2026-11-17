@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   MenuItem,
-  ReservationData,
+  type ReservationData,
 } from './types/reservation';
 import {
   INITIAL_TABLES,

@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Armchair,
   BadgeCheck,
@@ -23,7 +24,7 @@ import {
   MENU_PACKAGES,
   INITIAL_TABLES,
 } from "../data/mockData";
-import { ReservationData } from "../types/reservation";
+import type { ReservationData } from "../types/reservation";
 import type { Session } from "@supabase/supabase-js";
 import dlinggaLogo from "../img/dlingga.jpg";
 import qrisImage from "../img/qris.jpg";

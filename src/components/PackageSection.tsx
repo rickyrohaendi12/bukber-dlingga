@@ -1,5 +1,5 @@
-import React from "react";
-import { MenuItem } from "../types/reservation";
+import type React from "react";
+import type { MenuItem } from "../types/reservation";
 import {
   Check,
   CheckCircle2,

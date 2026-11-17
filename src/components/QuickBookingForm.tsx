@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { MenuItem, TableItem, ReservationData } from "../types/reservation";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { MenuItem, TableItem, ReservationData } from "../types/reservation";
 import {
   CheckCircle2,
   Clock,

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { MessageCircle, X, Shield, FileText } from "lucide-react";
 import dlinggaLogo from "../img/dlingga.jpg";
 

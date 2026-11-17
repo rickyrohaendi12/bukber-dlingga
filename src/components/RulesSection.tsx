@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { Ban, Banknote, CalendarCheck, CreditCard } from "lucide-react";
 
 const reservationRules = [

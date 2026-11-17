@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
-import { AddonItem, MenuItem, ReservationData } from "../types/reservation";
+import type React from "react";
+import { useMemo, useState } from "react";
+import type { AddonItem, MenuItem, ReservationData } from "../types/reservation";
 import { AlertCircle, Minus, Plus, X } from "lucide-react";
 import { isReservationEditable } from "../data/reservations";
 

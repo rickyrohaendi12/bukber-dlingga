@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import { Armchair, Check, Lock, Snowflake, Star, UtensilsCrossed } from 'lucide-react';
-import { TableItem } from '../types/reservation';
+import type { TableItem } from '../types/reservation';
 
 interface FloorPlanProps {
   tables: TableItem[];

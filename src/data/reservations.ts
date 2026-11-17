@@ -1,4 +1,4 @@
-import { ReservationData, TableItem } from '../types/reservation';
+import type { ReservationData, TableItem } from '../types/reservation';
 import { requireSupabase } from '../lib/supabase';
 
 interface ReservationRow {

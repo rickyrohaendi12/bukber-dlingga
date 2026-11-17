@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { Calendar, Utensils, Star, ShieldCheck, Armchair } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 

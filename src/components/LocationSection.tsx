@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { Clock, ExternalLink, MapPin, MessageCircle } from "lucide-react";
 
 export const LocationSection: React.FC = () => (

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { ReservationData } from "../types/reservation";
+import type React from "react";
+import { useState } from "react";
+import type { ReservationData } from "../types/reservation";
 import { X, Search, Ticket, AlertCircle } from "lucide-react";
 import { lookupReservation } from "../data/reservations";
 

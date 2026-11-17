@@ -1,4 +1,4 @@
-import { TableItem, MenuItem, AddonItem } from "../types/reservation";
+import type { TableItem, MenuItem, AddonItem } from "../types/reservation";
 
 export const INITIAL_TABLES: TableItem[] = [
   // Zona Semi-Outdoor Garden
