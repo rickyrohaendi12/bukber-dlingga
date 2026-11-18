@@ -1,6 +1,7 @@
 import type React from "react";
-import { Calendar, Utensils, Star, ShieldCheck, Armchair } from "lucide-react";
+import { Calendar, Utensils, Star, ShieldCheck } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
+import ramadhanDlingga from "../img/ramadhan-dlingga.png";
 
 interface HeroProps {
   onStartBooking: () => void;
@@ -138,7 +139,7 @@ export const Hero: React.FC<HeroProps> = ({
                   Musholla
                 </p>
                 <p className="text-xs text-[#635e53] mt-0.5">
-                  AC & Wudhu Terpisah
+                  Musholla Ber-AC
                 </p>
               </div>
               <div>
@@ -170,9 +171,8 @@ export const Hero: React.FC<HeroProps> = ({
               <div className="rounded-2xl overflow-hidden border border-[#E7DFD4] shadow-xl bg-white group">
                 <img
                   className="w-full h-80 sm:h-96 object-cover group-hover:scale-105 transition-transform duration-700"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK3jCwC39iYgMonw-xMCHrsOtaThInbF5l4o_1f-iIukYXivSIay_w9kYh86zhHnqXuVPHBDhk5AmXLrYEg0P88OvCMtrPP2T2DTm55sr7XkKS5gH-D2jCBZQv1tf0oX6hSU1ArR5B7k2ue58Q3-tfJd2ya46pBlm9QD5pqkMx3Zk8DAe6pp2HzfCSxyhhCpmboDLksRn-9lB5Cm7d203HZ6IEJnoeVczHrpX8neloAIw7C4qyJTRC"
-                  alt="Suasana meja iftar buka puasa bersama di Bukber Lounge dengan sajian istimewa dan suasana hangat"
-                  referrerPolicy="no-referrer"
+                  src={ramadhanDlingga}
+                  alt="Suasana Ramadan dan buka bersama di D'Lingga Coffee"
                   loading="eager"
                 />
               </div>

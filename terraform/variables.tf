@@ -22,3 +22,9 @@ variable "argocd_chart_version" {
   type        = string
   default     = null
 }
+
+variable "node_image" {
+  description = "kind node image (pinned for reproducible clusters)."
+  type        = string
+  default     = "kindest/node:v1.36.1"
+}

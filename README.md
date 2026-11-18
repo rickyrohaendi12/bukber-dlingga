@@ -18,16 +18,16 @@ A full-stack table reservation system for a coffee shop (buka bersama / group bo
 
 ## 🛠️ Tech Stack
 
-| Layer         | Technology                                              |
-| ------------- | ------------------------------------------------------- |
-| Frontend      | React, TypeScript, Vite, pnpm                           |
-| Backend / DB  | Supabase (Postgres, RPC functions, Row Level Security)  |
-| Auth          | Supabase Auth (admin role via `app_metadata`)           |
-| Hosting       | Vercel (live site)                                      |
-| Container     | Docker (multi-stage), Nginx unprivileged                |
-| CI/CD         | GitHub Actions                                          |
-| Security      | Trivy (image scan), Gitleaks, Dependabot                |
-| Registry      | GitHub Container Registry (GHCR)                        |
+| Layer        | Technology                                             |
+| ------------ | ------------------------------------------------------ |
+| Frontend     | React, TypeScript, Vite, pnpm                          |
+| Backend / DB | Supabase (Postgres, RPC functions, Row Level Security) |
+| Auth         | Supabase Auth (admin role via `app_metadata`)          |
+| Hosting      | Vercel (live site)                                     |
+| Container    | Docker (multi-stage), Nginx unprivileged               |
+| CI/CD        | GitHub Actions                                         |
+| Security     | Trivy (image scan), Gitleaks, Dependabot               |
+| Registry     | GitHub Container Registry (GHCR)                       |
 
 ## 🔐 Security & Data Design
 
@@ -93,9 +93,10 @@ pnpm dev
 - [x] CI pipeline with Gitleaks and Trivy
 - [x] Dependabot
 - [x] Publish image to GHCR
-- [ ] Pin GitHub Actions to commit SHAs (supply-chain hardening)
-- [ ] Lint and automated tests in CI
-- [ ] Kubernetes manifests with Kustomize
+- [x] Pin GitHub Actions to commit SHAs (supply-chain hardening)
+- [x] Lint and automated tests in CI
+- [x] Kubernetes manifests with Kustomize
+- [x] Manifest validation in CI (kubectl kustomize + kubeconform)
 - [ ] Terraform local cluster (kind) + Argo CD (GitOps)
 - [ ] Observability with Prometheus and Grafana
 - [ ] Automated Supabase migration checks in CI

@@ -1,130 +1,190 @@
-import type React from 'react';
-import { Check, CheckCircle2 } from 'lucide-react';
+import type React from "react";
+import { Check } from "lucide-react";
 
 export const FacilitiesBento: React.FC = () => {
   return (
-    <section className="py-16 md:py-20 bg-[#F8F5F0] border-b border-[#E7DFD4]" id="fasilitas">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <section
+      className="relative overflow-hidden border-b border-[#E7DFD4] bg-[#F8F5F0] py-16 md:py-20"
+      id="fasilitas"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-50"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 10% 20%, rgba(217,138,69,.12) 0, transparent 18%), radial-gradient(circle at 90% 78%, rgba(113,145,107,.10) 0, transparent 20%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="px-3.5 py-1 rounded-full bg-[#faebe2] text-[#D98A45] text-xs font-semibold">
+        <div className="mx-auto mb-10 max-w-2xl text-center md:mb-12">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#E7DFD4] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#D98A45] shadow-xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#D98A45]" />
             Kenyamanan Maksimal
           </span>
-          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a0f0b] mt-2">
-            Fasilitas Lengkap untuk Kenyamanan Ibadah
+          <h2 className="mt-3 font-display text-3xl font-bold text-[#1a0f0b] sm:text-4xl">
+            Fasilitas Tersedia
           </h2>
-          <p className="text-sm sm:text-base text-[#635e53] mt-2 leading-relaxed">
-            Kami memastikan momen berbuka puasa dan ibadah Maghrib Anda berjalan khusyuk, tertib, dan
-            tanpa rasa tergesa-gesa.
+          <p className="mt-3 text-sm leading-relaxed text-[#635e53] sm:text-base">
+            Nikmati momen buka bersama yang nyaman dengan ruang makan, fasilitas
+            ibadah, dan area bersantai dalam satu lokasi.
           </p>
         </div>
 
         {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6 lg:gap-5">
           {/* Feature 1: Musholla AC & Nyaman (Span 2 cols on tablet/desktop) */}
-          <div className="md:col-span-2 rounded-2xl bg-white border border-[#E7DFD4] p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row gap-6 items-center">
-            <div className="w-full sm:w-1/2 rounded-xl overflow-hidden aspect-video border border-[#E7DFD4] bg-[#F8F5F0]">
+          <article className="group relative overflow-hidden rounded-3xl border border-[#E7DFD4] bg-[#30231f] p-5 shadow-lg shadow-[#30231f]/8 md:col-span-2 lg:col-span-4">
+            <div className="grid h-full gap-5 sm:grid-cols-[1.05fr_.95fr] sm:items-center">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-[#201714] sm:aspect-[4/3]">
               <img
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlTNViA2wW1uAPn-WN9kiNEokPyYqnxcENZcrbjySwvlqI05viVvbr4WunUqJK0ZxHcvQlx9XFVhkzTF0w7Crupv1bBkks6Wn8yJ9kkvni9sGc46dqTpiY7CER3ymYQGfxebClwrp8fABjpv8WsljpVTFiudeCNgBeB1qOhuwBI_CQDU_2D-5PGJU3QgzGLlafmfEf2kSVurQBAGdg3LEgWmYHzoJ6HO4n09iN-JdGmkJ4Ri1qqOel"
-                alt="Ruang musholla ber-AC yang nyaman dan bersih di Bukber Lounge"
+                alt="Ruang musholla yang nyaman dan bersih"
                 referrerPolicy="no-referrer"
                 loading="lazy"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f0b]/35 to-transparent" />
             </div>
-            <div className="w-full sm:w-1/2 space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-[#faebe2] text-[#D98A45] flex items-center justify-center">
-                <span className="material-symbols-outlined text-[24px]">mosque</span>
+            <div className="space-y-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#D98A45]/30 bg-[#D98A45]/15 text-[#ffb77d]">
+                <span className="material-symbols-outlined text-[24px]">
+                  mosque
+                </span>
               </div>
-              <h3 className="font-display text-xl sm:text-2xl font-bold text-[#1a0f0b]">
-                Ruang Sholat & Musholla Full AC
+              <h3 className="font-display text-2xl font-bold text-white">
+                Musholla
               </h3>
-              <p className="text-sm text-[#635e53] leading-relaxed">
-                Kapasitas hingga 40 jamaah dengan pendingin ruangan sejuk, karpet tebal harum, serta
-                perlengkapan mukena dan sarung yang senantiasa bersih.
+              <p className="text-sm leading-relaxed text-white/70">
+                Musholla dengan kapasitas sekitar 15–25 jamaah,
+                dilengkapi sajadah, mukena, dan sarung yang selalu bersih.
               </p>
-              <div className="inline-flex items-center gap-1.5 text-[#71916B] text-xs sm:text-sm font-semibold pt-1">
-                <CheckCircle2 className="w-4 h-4 text-[#71916B]" />
-                <span>Imam Sholat Maghrib & Isya Berjamaah</span>
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-[#ffddb9]">
+                <Check className="h-4 w-4" />
+                Sholat Maghrib & Isya Berjamaah
               </div>
             </div>
-          </div>
+            </div>
+          </article>
 
-          {/* Feature 2: Tempat Wudhu Terpisah */}
-          <div className="rounded-2xl bg-white border border-[#E7DFD4] p-6 shadow-xs flex flex-col justify-between">
+          {/* Feature 2: Playground */}
+          <article className="group flex flex-col justify-between rounded-3xl border border-[#E7DFD4] bg-white p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#D98A45]/40 hover:shadow-lg hover:shadow-[#30231f]/5 md:col-span-1 lg:col-span-2">
             <div>
-              <div className="w-10 h-10 rounded-lg bg-[#faebe2] text-[#D98A45] flex items-center justify-center mb-4">
-                <span className="material-symbols-outlined text-[24px]">wash</span>
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#faebe2] text-[#D98A45] transition-transform duration-300 group-hover:scale-105">
+                <span className="material-symbols-outlined text-[24px]">
+                  child_care
+                </span>
               </div>
               <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
-                Tempat Wudhu Terpisah
+                Playground
               </h3>
               <p className="text-sm text-[#635e53] mt-2 leading-relaxed">
-                Area wudhu pria dan wanita dibuat tertutup dan terpisah untuk menjaga privasi,
-                dilengkapi lantai anti-slip dan aliran air bersih bertekanan stabil.
+                Area bermain yang dapat digunakan untuk menemani anak-anak
+                bersantai bersama keluarga selama menikmati suasana bukber.
               </p>
             </div>
-            <span className="text-[#635e53] text-xs mt-4 pt-4 border-t border-[#E7DFD4] flex items-center gap-1.5 font-medium">
-              <Check className="w-4 h-4 text-[#71916B]" /> Higienis & Terawat
+            <span className="mt-5 flex items-center gap-1.5 border-t border-[#E7DFD4] pt-4 text-xs font-medium text-[#635e53]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#71916B]/10">
+                <Check className="h-3.5 w-3.5 text-[#71916B]" />
+              </span>
+              Aman untuk keluarga
             </span>
-          </div>
+          </article>
 
-          {/* Feature 3: Indoor AC & Semi-Outdoor Garden */}
-          <div className="rounded-2xl bg-white border border-[#E7DFD4] p-6 shadow-xs flex flex-col justify-between">
+          {/* Feature 3: Toilet */}
+          <article className="group flex flex-col justify-between rounded-3xl border border-[#E7DFD4] bg-white p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#D98A45]/40 hover:shadow-lg hover:shadow-[#30231f]/5 lg:col-span-2">
             <div>
-              <div className="w-10 h-10 rounded-lg bg-[#faebe2] text-[#D98A45] flex items-center justify-center mb-4">
-                <span className="material-symbols-outlined text-[24px]">deck</span>
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#faebe2] text-[#D98A45] transition-transform duration-300 group-hover:scale-105">
+                <span className="material-symbols-outlined text-[24px]">
+                  wc
+                </span>
               </div>
               <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
-                Indoor & Semi-Outdoor Garden
+                Toilet
               </h3>
               <p className="text-sm text-[#635e53] mt-2 leading-relaxed">
-                Pilihan area ber-AC bebas asap rokok atau taman semi-outdoor berangin sejuk dengan
-                tanaman tropis yang asri.
+                Toilet tersedia untuk memenuhi kebutuhan tamu dan dijaga
+                kebersihannya selama jam operasional.
               </p>
             </div>
-            <span className="text-[#635e53] text-xs mt-4 pt-4 border-t border-[#E7DFD4] flex items-center gap-1.5 font-medium">
-              <Check className="w-4 h-4 text-[#71916B]" /> Kapasitas Hingga 250 Pax
+            <span className="mt-5 flex items-center gap-1.5 border-t border-[#E7DFD4] pt-4 text-xs font-medium text-[#635e53]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#71916B]/10">
+                <Check className="h-3.5 w-3.5 text-[#71916B]" />
+              </span>
+              Bersih & terawat
             </span>
-          </div>
+          </article>
 
-          {/* Feature 4: Spot Foto Silaturahmi */}
-          <div className="rounded-2xl bg-white border border-[#E7DFD4] p-6 shadow-xs flex flex-col justify-between">
+          {/* Feature 4: Indoor AC & Semi-Outdoor Garden */}
+          <article className="group flex flex-col justify-between rounded-3xl border border-[#E7DFD4] bg-white p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#D98A45]/40 hover:shadow-lg hover:shadow-[#30231f]/5 lg:col-span-2">
             <div>
-              <div className="w-10 h-10 rounded-lg bg-[#faebe2] text-[#D98A45] flex items-center justify-center mb-4">
-                <span className="material-symbols-outlined text-[24px]">photo_camera</span>
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#faebe2] text-[#D98A45] transition-transform duration-300 group-hover:scale-105">
+                <span className="material-symbols-outlined text-[24px]">
+                  deck
+                </span>
               </div>
               <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
-                Spot Foto Silaturahmi
+                Area Indoor & Semi-Outdoor Garden
               </h3>
               <p className="text-sm text-[#635e53] mt-2 leading-relaxed">
-                Sudut photobooth tematik Ramadan dengan pencahayaan warm aesthetics untuk
-                mengabadikan momen foto bersama tim atau sanak famili.
+                Pilihan duduk di area indoor yang nyaman atau area semi-outdoor
+                garden dengan suasana taman yang sejuk dan asri.
               </p>
             </div>
-            <span className="text-[#635e53] text-xs mt-4 pt-4 border-t border-[#E7DFD4] flex items-center gap-1.5 font-medium">
-              <Check className="w-4 h-4 text-[#71916B]" /> Instagrammable Corner
+            <span className="mt-5 flex items-center gap-1.5 border-t border-[#E7DFD4] pt-4 text-xs font-medium text-[#635e53]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#71916B]/10">
+                <Check className="h-3.5 w-3.5 text-[#71916B]" />
+              </span>
+              Dua pilihan suasana
             </span>
-          </div>
+          </article>
 
-          {/* Feature 5: Fast WiFi & Stopkontak */}
-          <div className="rounded-2xl bg-white border border-[#E7DFD4] p-6 shadow-xs flex flex-col justify-between">
+          {/* Feature 5: Spot Foto Silaturahmi */}
+          <article className="group flex flex-col justify-between rounded-3xl border border-[#E7DFD4] bg-white p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#D98A45]/40 hover:shadow-lg hover:shadow-[#30231f]/5 lg:col-span-2">
             <div>
-              <div className="w-10 h-10 rounded-lg bg-[#faebe2] text-[#D98A45] flex items-center justify-center mb-4">
-                <span className="material-symbols-outlined text-[24px]">wifi</span>
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#faebe2] text-[#D98A45] transition-transform duration-300 group-hover:scale-105">
+                <span className="material-symbols-outlined text-[24px]">
+                  photo_camera
+                </span>
               </div>
               <h3 className="font-display text-lg font-bold text-[#1a0f0b]">
-                High-Speed WiFi & Power Plugs
+                Spot Foto Area
               </h3>
               <p className="text-sm text-[#635e53] mt-2 leading-relaxed">
-                Koneksi internet dedicated 200 Mbps dan stopkontak di setiap sudut meja bagi yang
-                perlu bekerja sejenak sebelum berbuka.
+                Sudut area estetik dengan nuansa hangat dan tema Ramadan untuk
+                mengabadikan momen bersama teman, keluarga, atau rekan kerja.
               </p>
             </div>
-            <span className="text-[#635e53] text-xs mt-4 pt-4 border-t border-[#E7DFD4] flex items-center gap-1.5 font-medium">
-              <Check className="w-4 h-4 text-[#71916B]" /> Bebas Hambatan
+            <span className="mt-5 flex items-center gap-1.5 border-t border-[#E7DFD4] pt-4 text-xs font-medium text-[#635e53]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#71916B]/10">
+                <Check className="h-3.5 w-3.5 text-[#71916B]" />
+              </span>
+              Sudut Instagrammable
             </span>
-          </div>
+          </article>
+
+          {/* Feature 6: Fast WiFi */}
+          <article className="group flex flex-col justify-between rounded-3xl border border-[#E7DFD4] bg-gradient-to-r from-[#30231f] to-[#49372f] p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#30231f]/10 lg:col-span-6 sm:flex-row sm:items-center sm:gap-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-[#ffb77d] transition-transform duration-300 group-hover:scale-105">
+                <span className="material-symbols-outlined text-[24px]">
+                  wifi
+                </span>
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-bold text-white">
+                  WiFi Area
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm leading-relaxed text-white/70">
+                  Fasilitas WiFi tersedia untuk mendukung kebutuhan komunikasi dan
+                  berbagi momen selama berada di D&apos;Lingga Coffee.
+                </p>
+              </div>
+            </div>
+            <span className="mt-4 flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-medium text-white sm:mt-0">
+              <Check className="h-4 w-4 text-[#b9cbb5]" />
+              Terhubung di area tempat duduk
+            </span>
+          </article>
         </div>
       </div>
     </section>

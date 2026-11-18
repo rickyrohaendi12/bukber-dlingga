@@ -1,5 +1,6 @@
 resource "kind_cluster" "this" {
   name           = var.cluster_name
+  node_image     = var.node_image
   wait_for_ready = true
 
   kind_config {
@@ -36,9 +37,10 @@ resource "helm_release" "traefik" {
   namespace        = "traefik"
   create_namespace = true
   wait             = true
+  timeout          = 900
 
   set = [
-    { name = "service.type", value = "NodePort" },
+    { name = "service.spec.type", value = "NodePort" },
     { name = "ports.web.nodePort", value = "30080" },
   ]
 
@@ -53,6 +55,7 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   create_namespace = true
   wait             = true
+  timeout          = 900
 
   # Serve plain HTTP so a local port-forward works without TLS warnings.
   set = [
