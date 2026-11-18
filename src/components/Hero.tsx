@@ -89,9 +89,11 @@ export const Hero: React.FC<HeroProps> = ({
                 visible: { opacity: 1, y: 0, transition: { duration: 0.55 } },
               }}
             >
-              Sambut hangatnya silaturahmi di bulan suci bersama keluarga dan
-              sahabat. Nikmati sajian iftar otentik, takjil bar melimpah, dan
-              atmosfer kafe kontemporer yang tenang.
+              Setiap pertemuan membawa langkah awal untuk mengulang cerita lama
+              atau membuka lembaran baru. D'Lingga Coffee memberi ruang untuk
+              bertemu, berkumpul, dan berbagi cerita. Find Your Moment, selalu
+              menjadi bagian yang melekat dari kami. Luangkan waktu dan
+              kesempatan untuk menciptakan momen di sini.
             </motion.p>
 
             {/* CTAs */}
