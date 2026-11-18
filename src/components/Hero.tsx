@@ -91,7 +91,7 @@ export const Hero: React.FC<HeroProps> = ({
             >
               Sambut hangatnya silaturahmi di bulan suci bersama keluarga dan
               sahabat. Nikmati sajian iftar otentik, takjil bar melimpah, dan
-              atmosfer kafe kontemporer yang tenang di tengah hiruk-pikuk kota.
+              atmosfer kafe kontemporer yang tenang.
             </motion.p>
 
             {/* CTAs */}
@@ -138,9 +138,7 @@ export const Hero: React.FC<HeroProps> = ({
                 <p className="font-display text-2xl sm:text-3xl font-bold text-[#1a0f0b]">
                   Musholla
                 </p>
-                <p className="text-xs text-[#635e53] mt-0.5">
-                  Musholla Ber-AC
-                </p>
+                <p className="text-xs text-[#635e53] mt-0.5">Musholla</p>
               </div>
               <div>
                 <p className="font-display text-2xl sm:text-3xl font-bold text-[#1a0f0b]">
