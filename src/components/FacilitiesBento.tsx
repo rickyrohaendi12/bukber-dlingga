@@ -1,5 +1,6 @@
 import type React from "react";
 import { Check } from "lucide-react";
+import musholaImage from "../img/mushola.jpeg";
 
 export const FacilitiesBento: React.FC = () => {
   return (
@@ -35,34 +36,33 @@ export const FacilitiesBento: React.FC = () => {
           {/* Feature 1: Musholla AC & Nyaman (Span 2 cols on tablet/desktop) */}
           <article className="group relative overflow-hidden rounded-3xl border border-[#E7DFD4] bg-[#30231f] p-5 shadow-lg shadow-[#30231f]/8 md:col-span-2 lg:col-span-4">
             <div className="grid h-full gap-5 sm:grid-cols-[1.05fr_.95fr] sm:items-center">
-            <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-[#201714] sm:aspect-[4/3]">
-              <img
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlTNViA2wW1uAPn-WN9kiNEokPyYqnxcENZcrbjySwvlqI05viVvbr4WunUqJK0ZxHcvQlx9XFVhkzTF0w7Crupv1bBkks6Wn8yJ9kkvni9sGc46dqTpiY7CER3ymYQGfxebClwrp8fABjpv8WsljpVTFiudeCNgBeB1qOhuwBI_CQDU_2D-5PGJU3QgzGLlafmfEf2kSVurQBAGdg3LEgWmYHzoJ6HO4n09iN-JdGmkJ4Ri1qqOel"
-                alt="Ruang musholla yang nyaman dan bersih"
-                referrerPolicy="no-referrer"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f0b]/35 to-transparent" />
-            </div>
-            <div className="space-y-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#D98A45]/30 bg-[#D98A45]/15 text-[#ffb77d]">
-                <span className="material-symbols-outlined text-[24px]">
-                  mosque
-                </span>
+              <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-[#201714] sm:aspect-[4/3]">
+                <img
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  src={musholaImage}
+                  alt="Ruang musholla yang nyaman dan bersih"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f0b]/35 to-transparent" />
               </div>
-              <h3 className="font-display text-2xl font-bold text-white">
-                Musholla
-              </h3>
-              <p className="text-sm leading-relaxed text-white/70">
-                Musholla dengan kapasitas sekitar 15–25 jamaah,
-                dilengkapi sajadah, mukena, dan sarung yang selalu bersih.
-              </p>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-[#ffddb9]">
-                <Check className="h-4 w-4" />
-                Sholat Maghrib & Isya Berjamaah
+              <div className="space-y-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#D98A45]/30 bg-[#D98A45]/15 text-[#ffb77d]">
+                  <span className="material-symbols-outlined text-[24px]">
+                    mosque
+                  </span>
+                </div>
+                <h3 className="font-display text-2xl font-bold text-white">
+                  Musholla
+                </h3>
+                <p className="text-sm leading-relaxed text-white/70">
+                  Musholla dengan kapasitas sekitar 15–25 jamaah, dilengkapi
+                  sajadah, mukena, dan sarung yang selalu bersih.
+                </p>
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-[#ffddb9]">
+                  <Check className="h-4 w-4" />
+                  Sholat Maghrib & Isya Berjamaah
+                </div>
               </div>
-            </div>
             </div>
           </article>
 
@@ -175,8 +175,8 @@ export const FacilitiesBento: React.FC = () => {
                   WiFi Area
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm leading-relaxed text-white/70">
-                  Fasilitas WiFi tersedia untuk mendukung kebutuhan komunikasi dan
-                  berbagi momen selama berada di D&apos;Lingga Coffee.
+                  Fasilitas WiFi tersedia untuk mendukung kebutuhan komunikasi
+                  dan berbagi momen selama berada di D&apos;Lingga Coffee.
                 </p>
               </div>
             </div>
