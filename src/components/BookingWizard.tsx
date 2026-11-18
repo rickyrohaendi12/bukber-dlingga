@@ -216,7 +216,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F5F0] py-6 sm:py-10">
+    <div className="min-h-screen bg-[#ECDFCF] py-6 sm:py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Step Navigation Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
@@ -347,7 +347,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       aria-label="Kurangi jumlah tamu"
                       disabled={pax <= 2}
                       onClick={() => handlePaxChange(Math.max(2, pax - 1))}
-                      className="h-12 w-12 bg-[#F8F5F0] text-xl font-bold text-[#1a0f0b] hover:bg-[#e7dfd1] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:cursor-not-allowed disabled:opacity-40"
+                      className="h-12 w-12 bg-[#ECDFCF] text-xl font-bold text-[#1a0f0b] hover:bg-[#e7dfd1] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       -
                     </button>
@@ -359,7 +359,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                       aria-label="Tambah jumlah tamu"
                       disabled={pax >= 12}
                       onClick={() => handlePaxChange(pax + 1)}
-                      className="h-12 w-12 bg-[#F8F5F0] text-xl font-bold text-[#1a0f0b] hover:bg-[#e7dfd1] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:cursor-not-allowed disabled:opacity-40"
+                      className="h-12 w-12 bg-[#ECDFCF] text-xl font-bold text-[#1a0f0b] hover:bg-[#e7dfd1] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       +
                     </button>
@@ -443,7 +443,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 }}
                 required
                 disabled={capacitySuitableTables.length === 0}
-                className="min-h-12 w-full cursor-pointer rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#F8F5F0] disabled:text-[#635e53]"
+                className="min-h-12 w-full cursor-pointer rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#ECDFCF] disabled:text-[#635e53]"
               >
                 <option value="" disabled>
                   {capacitySuitableTables.length === 0
@@ -556,7 +556,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                             aria-label={`Kurangi ${item.name}`}
                             disabled={quantity === 0}
                             onClick={() => handlePackageQty(item.id, -1)}
-                            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#cfc4b7] text-[#1a0f0b] hover:bg-[#F8F5F0] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
+                            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#cfc4b7] text-[#1a0f0b] hover:bg-[#ECDFCF] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:opacity-40"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
@@ -602,7 +602,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   return (
                     <div
                       key={addon.id}
-                      className="flex flex-col gap-3 rounded-xl border border-[#E7DFD4] p-4 transition-colors hover:bg-[#F8F5F0] sm:flex-row sm:items-center sm:justify-between"
+                      className="flex flex-col gap-3 rounded-xl border border-[#E7DFD4] p-4 transition-colors hover:bg-[#ECDFCF] sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="pr-4">
                         <div className="flex items-center gap-2">
@@ -675,7 +675,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
               </div>
 
               {/* Studio & Kursi Terpilih (Cinema-like aesthetic from Image 3) */}
-              <div className="bg-[#F8F5F0] rounded-xl p-3.5 border border-[#E7DFD4] mb-5 text-xs space-y-2">
+              <div className="bg-[#ECDFCF] rounded-xl p-3.5 border border-[#E7DFD4] mb-5 text-xs space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-[#635e53] flex items-center gap-1.5 font-medium">
                     <span className="material-symbols-outlined text-[16px] text-[#D98A45]">

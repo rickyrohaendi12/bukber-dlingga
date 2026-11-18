@@ -60,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, [currentView]);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#F8F5F0]/95 backdrop-blur-md border-b border-[#E7DFD4] shadow-xs">
+    <header className="sticky top-0 z-40 bg-[#ECDFCF]/95 backdrop-blur-md border-b border-[#E7DFD4] shadow-xs">
       <div className="flex justify-between items-center w-full px-4 sm:px-6 max-w-7xl mx-auto h-16">
         {/* Brand Logo */}
         <button
@@ -119,7 +119,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Cek Tiket */}
           <button
             onClick={onOpenCheckTicket}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#F8F5F0] text-[#635e53] hover:text-[#D98A45] text-xs sm:text-sm font-semibold transition-colors border border-[#E7DFD4] hover:border-[#D98A45] cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#ECDFCF] text-[#635e53] hover:text-[#D98A45] text-xs sm:text-sm font-semibold transition-colors border border-[#E7DFD4] hover:border-[#D98A45] cursor-pointer"
           >
             <Ticket className="w-4 h-4 text-[#D98A45]" />
             <span className="hidden sm:inline">Cek Booking</span>

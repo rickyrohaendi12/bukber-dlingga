@@ -334,7 +334,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                   }}
                   required
                   disabled={!paxCount || capacitySuitableTables.length === 0}
-                  className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#F8F5F0] disabled:text-[#635e53]"
+                  className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#ECDFCF] disabled:text-[#635e53]"
                 >
                   <option value="" disabled>
                     {!paxCount

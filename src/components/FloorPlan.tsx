@@ -170,7 +170,7 @@ export const FloorPlan: React.FC<FloorPlanProps> = ({
             <p className="text-[11px] text-[#635e53]">{description}</p>
           </div>
         </div>
-        <span className="shrink-0 rounded-full bg-[#F8F5F0] px-2.5 py-1 text-[10px] font-semibold text-[#635e53]">
+        <span className="shrink-0 rounded-full bg-[#ECDFCF] px-2.5 py-1 text-[10px] font-semibold text-[#635e53]">
           {zoneTables.length} meja
         </span>
       </div>
@@ -179,7 +179,7 @@ export const FloorPlan: React.FC<FloorPlanProps> = ({
           {zoneTables.map(renderTableNode)}
         </div>
       ) : (
-        <p className="rounded-xl bg-[#F8F5F0] p-4 text-center text-xs text-[#635e53]">
+        <p className="rounded-xl bg-[#ECDFCF] p-4 text-center text-xs text-[#635e53]">
           Belum ada meja di zona ini.
         </p>
       )}
@@ -187,7 +187,7 @@ export const FloorPlan: React.FC<FloorPlanProps> = ({
   );
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#E7DFD4] bg-gradient-to-br from-[#FBF8F3] via-[#F8F5F0] to-[#F2E9DE] p-3 shadow-xs sm:p-5">
+    <div className="overflow-hidden rounded-2xl border border-[#E7DFD4] bg-gradient-to-br from-[#FBF8F3] via-[#ECDFCF] to-[#F2E9DE] p-3 shadow-xs sm:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 px-1">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#D98A45]">

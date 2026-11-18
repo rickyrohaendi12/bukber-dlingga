@@ -34,14 +34,14 @@ export const LocationSection: React.FC = () => (
           <span className="font-bold text-[#635e53]">22.00 WIB</span>
         </div>
       </div>
-      <div className="mt-4 rounded-lg border border-[#E7DFD4] bg-[#F8F5F0] p-3 text-center">
+      <div className="mt-4 rounded-lg border border-[#E7DFD4] bg-[#ECDFCF] p-3 text-center">
         <p className="text-xs leading-relaxed text-[#635e53]">
           Disarankan tiba{" "}
           <strong className="text-[#1a0f0b]">pukul 16.45 WIB</strong> agar
           hidangan tersaji tepat saat adzan Maghrib berkumandang.
         </p>
       </div>
-      <div className="mt-4 rounded-xl border border-[#E7DFD4] bg-[#F8F5F0] p-4">
+      <div className="mt-4 rounded-xl border border-[#E7DFD4] bg-[#ECDFCF] p-4">
         <p className="text-sm font-semibold text-[#1a0f0b]">
           Rombongan lebih dari 12 orang?
         </p>
@@ -79,7 +79,7 @@ export const LocationSection: React.FC = () => (
         33R8+66P, Hidden Gem (belakang SPPG Tarunajaya 2, Tarunajaya, Kec.
         Darmaraja, Kabupaten Sumedang, Jawa Barat 45372
       </p>
-      <div className="group relative h-44 overflow-hidden rounded-xl border border-[#E7DFD4] bg-[#F8F5F0]">
+      <div className="group relative h-44 overflow-hidden rounded-xl border border-[#E7DFD4] bg-[#ECDFCF]">
         <iframe
           className="h-full w-full border-0"
           src="https://www.google.com/maps?q=-6.9094375,108.0655625&z=17&output=embed"

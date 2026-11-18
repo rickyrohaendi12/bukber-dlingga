@@ -141,7 +141,7 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
         role="dialog"
         aria-modal="true"
         aria-labelledby="edit-order-title"
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#E7DFD4] bg-[#F8F5F0] shadow-2xl"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#E7DFD4] bg-[#ECDFCF] shadow-2xl"
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E7DFD4] bg-white px-5 py-4">
           <div>
@@ -160,7 +160,7 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
             onClick={onClose}
             disabled={isSaving}
             aria-label="Tutup"
-            className="rounded-lg p-2 text-[#635e53] transition hover:bg-[#F8F5F0] hover:text-[#1a0f0b] disabled:opacity-50"
+            className="rounded-lg p-2 text-[#635e53] transition hover:bg-[#ECDFCF] hover:text-[#1a0f0b] disabled:opacity-50"
           >
             <X className="h-5 w-5" />
           </button>
@@ -296,7 +296,7 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="min-h-11 rounded-xl border border-[#E7DFD4] bg-white px-5 text-sm font-semibold text-[#635e53] hover:bg-[#F8F5F0] disabled:opacity-50"
+              className="min-h-11 rounded-xl border border-[#E7DFD4] bg-white px-5 text-sm font-semibold text-[#635e53] hover:bg-[#ECDFCF] disabled:opacity-50"
             >
               Batal
             </button>
@@ -339,7 +339,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
       aria-label={`Kurangi ${label}`}
       disabled={!canDecrease}
       onClick={() => onChange(quantity - 1)}
-      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#cfc4b7] text-[#1a0f0b] hover:bg-[#F8F5F0] disabled:cursor-not-allowed disabled:opacity-40"
+      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#cfc4b7] text-[#1a0f0b] hover:bg-[#ECDFCF] disabled:cursor-not-allowed disabled:opacity-40"
     >
       <Minus className="h-4 w-4" />
     </button>

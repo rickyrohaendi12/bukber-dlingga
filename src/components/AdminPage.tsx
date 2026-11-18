@@ -418,7 +418,7 @@ export const AdminPage: React.FC = () => {
 
   if (isCheckingSession) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8F5F0] text-sm text-[#635e53]">
+      <div className="flex min-h-screen items-center justify-center bg-[#ECDFCF] text-sm text-[#635e53]">
         Memeriksa sesi admin...
       </div>
     );
@@ -426,7 +426,7 @@ export const AdminPage: React.FC = () => {
 
   if (!isSupabaseConfigured) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8F5F0] p-4">
+      <div className="flex min-h-screen items-center justify-center bg-[#ECDFCF] p-4">
         <div role="alert" className="max-w-lg rounded-2xl border border-[#F0D8D6] bg-white p-6 text-sm text-[#A8544E]">
           {authError}
         </div>
@@ -436,7 +436,7 @@ export const AdminPage: React.FC = () => {
 
   if (!session || !isAdmin) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F8F5F0] px-4 py-10">
+      <main className="flex min-h-screen items-center justify-center bg-[#ECDFCF] px-4 py-10">
         <form onSubmit={signIn} className="w-full max-w-md rounded-2xl border border-[#E7DFD4] bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[#faebe2] text-[#D98A45]">
             <LockKeyhole className="h-6 w-6" />
@@ -496,7 +496,7 @@ export const AdminPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F5F0] text-[#211a15]">
+    <div className="min-h-screen bg-[#ECDFCF] text-[#211a15]">
       <header className="border-b border-[#E7DFD4] bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6">
           <a
@@ -524,14 +524,14 @@ export const AdminPage: React.FC = () => {
             <button
               type="button"
               onClick={signOut}
-              className="flex items-center gap-2 rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#F8F5F0]"
+              className="flex items-center gap-2 rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#ECDFCF]"
             >
               <LogOut className="h-4 w-4" />
               Keluar
             </button>
             <a
               href="/"
-              className="rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#F8F5F0]"
+              className="rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#ECDFCF]"
             >
               Kembali ke website
             </a>
@@ -554,7 +554,7 @@ export const AdminPage: React.FC = () => {
           <button
             type="button"
             onClick={refreshReservations}
-            className="mt-4 rounded-xl border border-[#E7DFD4] bg-white px-4 py-2 text-sm font-semibold text-[#635e53] hover:bg-[#F8F5F0]"
+            className="mt-4 rounded-xl border border-[#E7DFD4] bg-white px-4 py-2 text-sm font-semibold text-[#635e53] hover:bg-[#ECDFCF]"
           >
             {isLoading ? "Memuat..." : "Muat ulang"}
           </button>
@@ -582,7 +582,7 @@ export const AdminPage: React.FC = () => {
             type="button"
             onClick={() => handleDailyDateChange("")}
             disabled={!dailyDate}
-            className="rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#F8F5F0] disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-[#E7DFD4] px-4 py-2.5 text-sm font-semibold text-[#635e53] transition hover:bg-[#ECDFCF] disabled:cursor-not-allowed disabled:opacity-50"
           >
             Semua tanggal
           </button>
@@ -604,7 +604,7 @@ export const AdminPage: React.FC = () => {
                 "Total booking",
                 ClipboardList,
                 "text-[#635e53]",
-                "bg-[#F8F5F0]",
+                "bg-[#ECDFCF]",
               ],
               [
                 "pending",
@@ -672,7 +672,7 @@ export const AdminPage: React.FC = () => {
                   {dailyDateLabel}
                 </h2>
               </div>
-              <p className="rounded-xl bg-[#F8F5F0] px-3 py-2 text-xs font-semibold text-[#635e53]">
+              <p className="rounded-xl bg-[#ECDFCF] px-3 py-2 text-xs font-semibold text-[#635e53]">
                 {dailyOrderSummary.bookingCount} booking aktif ·{" "}
                 {dailyOrderSummary.guestCount} tamu
               </p>
@@ -699,7 +699,7 @@ export const AdminPage: React.FC = () => {
                 ))}
               </ul>
             ) : (
-              <p className="mt-4 rounded-xl bg-[#F8F5F0] p-4 text-sm text-[#635e53]">
+              <p className="mt-4 rounded-xl bg-[#ECDFCF] p-4 text-sm text-[#635e53]">
                 Belum ada booking aktif pada tanggal ini.
               </p>
             )}
@@ -718,7 +718,7 @@ export const AdminPage: React.FC = () => {
                     {filteredReservations.length} booking ditampilkan
                   </p>
                 </div>
-                <span className="rounded-lg bg-[#F8F5F0] px-2.5 py-1.5 text-xs font-semibold text-[#635e53]">
+                <span className="rounded-lg bg-[#ECDFCF] px-2.5 py-1.5 text-xs font-semibold text-[#635e53]">
                   {filter === "all" ? "Semua status" : statusLabels[filter]}
                 </span>
               </div>
@@ -742,7 +742,7 @@ export const AdminPage: React.FC = () => {
                       className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                         filter === value
                           ? "bg-[#30231f] text-white"
-                          : "bg-[#F8F5F0] text-[#635e53] hover:bg-[#eee0d7]"
+                          : "bg-[#ECDFCF] text-[#635e53] hover:bg-[#eee0d7]"
                       }`}
                     >
                       {value === "all" ? "Semua" : statusLabels[value]}
@@ -965,7 +965,7 @@ export const AdminPage: React.FC = () => {
                 </div>
 
                 {selectedBooking.notes && (
-                  <div className="rounded-xl bg-[#F8F5F0] p-4">
+                  <div className="rounded-xl bg-[#ECDFCF] p-4">
                     <p className="text-xs font-bold uppercase tracking-wider text-[#8a7d73]">
                       Catatan pelanggan
                     </p>
@@ -1024,7 +1024,7 @@ export const AdminPage: React.FC = () => {
                           <a
                             href={qrisImage}
                             download="QRIS-DLingga.jpg"
-                            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#E7DFD4] bg-white px-4 py-2.5 text-sm font-semibold text-[#635e53] hover:bg-[#F8F5F0]"
+                            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#E7DFD4] bg-white px-4 py-2.5 text-sm font-semibold text-[#635e53] hover:bg-[#ECDFCF]"
                           >
                             Unduh gambar QRIS untuk dilampirkan
                           </a>

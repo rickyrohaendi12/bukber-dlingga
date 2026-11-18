@@ -314,7 +314,7 @@ function PublicApp() {
             </motion.div>
 
             {/* Reservasi, Lokasi & Jam Operasional */}
-            <section className="border-b border-[#E7DFD4] bg-[#F8F5F0] py-16 md:py-20">
+            <section className="border-b border-[#E9E4DC] bg-[#F7F5F1] py-16 md:py-20">
               <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-4 sm:px-6 lg:grid-cols-12">
                 <motion.div
                   className="lg:col-span-7"
@@ -357,7 +357,7 @@ function PublicApp() {
 
             {/* Denah Meja Kafe */}
             <motion.section
-              className="border-b border-[#E7DFD4] bg-[#F8F5F0] py-16 md:py-20"
+              className="border-b border-[#E7DFD4] bg-[#ECDFCF] py-16 md:py-20"
               id="denah"
               initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
               whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
@@ -381,7 +381,7 @@ function PublicApp() {
 
                 <div className="mx-auto max-w-xl rounded-3xl border border-[#E7DFD4] bg-white p-3 shadow-lg shadow-[#30231f]/[0.06] sm:p-5">
                   <div
-                    className="mb-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#F8F5F0] p-1.5"
+                    className="mb-3 grid grid-cols-2 gap-2 rounded-2xl bg-[#ECDFCF] p-1.5"
                     aria-label="Pilih lantai denah"
                   >
                     {([1, 2] as const).map((floor) => (
@@ -400,7 +400,7 @@ function PublicApp() {
                       </button>
                     ))}
                   </div>
-                  <div className="overflow-hidden rounded-2xl border border-[#E7DFD4] bg-[#F8F5F0] p-2 sm:p-3">
+                  <div className="overflow-hidden rounded-2xl border border-[#E7DFD4] bg-[#ECDFCF] p-2 sm:p-3">
                     <img
                       src={selectedFloor === 1 ? floorPlanFloor1Image : floorPlanFloor2Image}
                       alt={`Denah tata letak meja D'Lingga Coffee lantai ${selectedFloor} beserta kapasitas setiap meja`}
@@ -408,7 +408,7 @@ function PublicApp() {
                       loading="lazy"
                     />
                   </div>
-                  <div className="mt-3 flex flex-col gap-2 rounded-2xl bg-[#F8F5F0] px-4 py-3 sm:flex-row sm:items-center sm:justify-center">
+                  <div className="mt-3 flex flex-col gap-2 rounded-2xl bg-[#ECDFCF] px-4 py-3 sm:flex-row sm:items-center sm:justify-center">
                     <span className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-[#30231f]">
                       <Armchair className="h-4 w-4 text-[#9a5929]" aria-hidden="true" />
                       Sudah menemukan tempat yang cocok?

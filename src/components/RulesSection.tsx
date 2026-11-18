@@ -29,7 +29,7 @@ const reservationRules = [
 export const RulesSection: React.FC = () => (
   <section
     id="rules"
-    className="border-b border-[#E7DFD4] bg-[#F8F5F0] py-12 md:py-16"
+    className="border-b border-[#E9E4DC] bg-[#F7F5F1] py-12 md:py-16"
     aria-labelledby="rules-heading"
   >
     <div className="mx-auto max-w-7xl px-4 sm:px-6">

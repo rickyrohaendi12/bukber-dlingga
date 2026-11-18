@@ -15,7 +15,7 @@ export const Hero: React.FC<HeroProps> = ({
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="relative bg-[#F8F5F0] overflow-hidden border-b border-[#E7DFD4]">
+    <section className="relative bg-[#ECDFCF] overflow-hidden border-b border-[#E7DFD4]">
       {/* Subtle Ambient Warm Glow */}
       <motion.div
         className="absolute -top-32 right-1/4 w-96 h-96 bg-[#ffdcc3]/30 rounded-full blur-3xl pointer-events-none"

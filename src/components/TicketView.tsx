@@ -122,7 +122,7 @@ export const TicketView: React.FC<TicketViewProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-[#F8F5F0] py-8 md:py-14 print:bg-white print:py-0">
+    <div className="min-h-screen bg-[#ECDFCF] py-8 md:py-14 print:bg-white print:py-0">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Hero Banner Sukses (Screen only) */}
         <section className="text-center max-w-2xl mx-auto mb-10 print:hidden">
@@ -265,7 +265,7 @@ export const TicketView: React.FC<TicketViewProps> = ({
                 <div className="space-y-4">
                   {/* Hari & Waktu */}
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#F8F5F0] flex items-center justify-center text-[#D98A45] shrink-0 border border-[#E7DFD4]">
+                    <div className="w-10 h-10 rounded-lg bg-[#ECDFCF] flex items-center justify-center text-[#D98A45] shrink-0 border border-[#E7DFD4]">
                       <Calendar className="w-5 h-5" />
                     </div>
                     <div>
@@ -286,7 +286,7 @@ export const TicketView: React.FC<TicketViewProps> = ({
 
                   {/* Alokasi Meja */}
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#F8F5F0] flex items-center justify-center text-[#D98A45] shrink-0 border border-[#E7DFD4]">
+                    <div className="w-10 h-10 rounded-lg bg-[#ECDFCF] flex items-center justify-center text-[#D98A45] shrink-0 border border-[#E7DFD4]">
                       <span className="material-symbols-outlined text-xl">
                         table_restaurant
                       </span>
@@ -311,7 +311,7 @@ export const TicketView: React.FC<TicketViewProps> = ({
 
                   {/* Data Pemesan */}
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#F8F5F0] flex items-center justify-center text-[#D98A45] shrink-0 border border-[#E7DFD4]">
+                    <div className="w-10 h-10 rounded-lg bg-[#ECDFCF] flex items-center justify-center text-[#D98A45] shrink-0 border border-[#E7DFD4]">
                       <User className="w-5 h-5" />
                     </div>
                     <div>
@@ -325,7 +325,7 @@ export const TicketView: React.FC<TicketViewProps> = ({
                         {reservation.customerPhone}
                       </p>
                       {reservation.notes && (
-                        <p className="text-[11px] text-[#635e53] italic mt-1 bg-[#F8F5F0] p-1.5 rounded border border-[#E7DFD4]">
+                        <p className="text-[11px] text-[#635e53] italic mt-1 bg-[#ECDFCF] p-1.5 rounded border border-[#E7DFD4]">
                           "{reservation.notes}"
                         </p>
                       )}
@@ -334,7 +334,7 @@ export const TicketView: React.FC<TicketViewProps> = ({
                 </div>
 
                 {/* Right Info Block: Order Breakdown & Total */}
-                <div className="bg-[#F8F5F0] rounded-xl p-5 border border-[#E7DFD4] flex flex-col justify-between">
+                <div className="bg-[#ECDFCF] rounded-xl p-5 border border-[#E7DFD4] flex flex-col justify-between">
                   <div>
                     <span className="text-[11px] text-[#635e53] uppercase tracking-wider block mb-2 font-bold">
                       Rincian Paket & Pesanan
@@ -458,11 +458,11 @@ export const TicketView: React.FC<TicketViewProps> = ({
             {/* Physical Ticket Perforation Line with Side Notches */}
             <div className="relative my-0 flex items-center justify-between">
               {/* Left Ticket Notch Punch */}
-              <div className="w-6 h-6 rounded-full bg-[#F8F5F0] -ml-3 border-r border-[#E7DFD4] shadow-inner" />
+              <div className="w-6 h-6 rounded-full bg-[#ECDFCF] -ml-3 border-r border-[#E7DFD4] shadow-inner" />
               {/* Perforated Dashed Line */}
               <div className="w-full border-b-2 border-dashed border-[#E7DFD4] mx-2" />
               {/* Right Ticket Notch Punch */}
-              <div className="w-6 h-6 rounded-full bg-[#F8F5F0] -mr-3 border-l border-[#E7DFD4] shadow-inner" />
+              <div className="w-6 h-6 rounded-full bg-[#ECDFCF] -mr-3 border-l border-[#E7DFD4] shadow-inner" />
             </div>
 
             {/* Arrival reminder */}
@@ -489,7 +489,7 @@ export const TicketView: React.FC<TicketViewProps> = ({
           {/* Secondary Action: Back to Home */}
           <button
             onClick={onBackToHome}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-[#E7DFD4] bg-white hover:bg-[#F8F5F0] text-[#1a0f0b] font-bold text-sm transition-all shadow-xs cursor-pointer active:scale-98"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-[#E7DFD4] bg-white hover:bg-[#ECDFCF] text-[#1a0f0b] font-bold text-sm transition-all shadow-xs cursor-pointer active:scale-98"
           >
             <Home className="w-4 h-4" />
             <span>Kembali ke Beranda</span>

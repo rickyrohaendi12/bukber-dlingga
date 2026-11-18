@@ -31,29 +31,27 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
 }) => {
   return (
     <section
-      className="py-16 md:py-20 bg-white border-b border-[#E7DFD4]"
+      className="relative overflow-hidden border-b border-[#E9E4DC] bg-[#F7F5F1] py-16 md:py-24"
       id="paket"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#faebe2] text-[#D98A45] text-xs font-semibold mb-2">
-            <span className="material-symbols-outlined text-[15px]">
-              ramen_dining
-            </span>
+        <div className="mx-auto mb-12 max-w-2xl text-center">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#E9E4DC] bg-[#F1ECE5] px-4 py-2 text-xs font-bold tracking-wide text-[#8F5A35]">
+            <Sparkles className="h-3.5 w-3.5" />
             <span>Pilihan Menu Spesial Iftar</span>
           </div>
-          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a0f0b]">
-            Paket Bukber Ramadan
+          <h2 className="font-display text-3xl font-extrabold tracking-tight text-[#30231F] sm:text-4xl md:text-5xl">
+            Paket Bukber <span className="text-[#A95F2A]">Ramadan</span>
           </h2>
-          <p className="text-sm sm:text-base text-[#635e53] mt-2 leading-relaxed">
+          <p className="mt-4 text-sm leading-relaxed text-[#63584E] sm:text-base">
             Disajikan secara higienis, segar, dan tepat waktu menjelang adzan
             maghrib. Seluruh paket sudah termasuk welcome dates kurma medjool.
           </p>
         </div>
 
         {/* Package Cards */}
-        <div className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {packages.map((pkg) => {
             const isPopular = pkg.isPopular;
             const isVip = pkg.isVip;
@@ -62,83 +60,85 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
             return (
               <div
                 key={pkg.id}
-                className={`relative rounded-2xl overflow-hidden flex flex-col transition-all duration-300 ${
+                className={`group relative flex flex-col overflow-hidden rounded-3xl border bg-white transition-all duration-300 ${
                   isPopular
-                    ? "border-2 border-[#D98A45] bg-white shadow-xl hover:shadow-2xl scale-[1.02] md:-translate-y-1"
-                    : "border border-[#E7DFD4] bg-[#F8F5F0] hover:bg-white shadow-xs hover:shadow-md"
+                    ? "border-[#B97949] shadow-md ring-1 ring-[#B97949]/20 md:-translate-y-1"
+                    : "border-[#E9E4DC] shadow-sm hover:-translate-y-1 hover:border-[#D6C7B7] hover:shadow-md"
                 }`}
               >
                 {/* Popular Floating Badge */}
                 {isPopular && (
-                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-[#D98A45] text-white px-4 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm whitespace-nowrap">
-                    <Flame className="w-3.5 h-3.5 fill-white" />
+                  <div className="absolute left-1/2 top-3 z-10 inline-flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#A95F2A] px-4 py-1.5 text-xs font-bold text-white shadow-lg shadow-[#30231F]/20">
+                    <Flame className="h-3.5 w-3.5 fill-white" />
                     <span>Pilihan Terfavorit</span>
                   </div>
                 )}
 
-                <div className="relative h-44 sm:h-48 overflow-hidden bg-[#E7DFD4]">
+                <div className="relative h-48 overflow-hidden bg-[#EEEAE3] sm:h-52">
                   <img
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     src={
                       packageImages[pkg.id] ?? packageImages["paket-rame-rame"]
                     }
                     alt={`Hidangan ${pkg.name}`}
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#211711]/25 via-transparent to-transparent" />
                 </div>
 
-                <div className="flex flex-1 flex-col p-6 sm:p-7">
+                <div className="flex flex-1 flex-col p-5 sm:p-6">
                   <div>
                     {/* Top meta tags */}
-                    <div className="flex items-center justify-between gap-2 mb-3 mt-1">
-                      <span className="px-2.5 py-1 rounded-full bg-[#faebe2] text-[#635e53] text-xs font-semibold">
+                    <div className="mb-3 mt-1 flex min-h-8 items-center justify-between gap-2">
+                      <span className="rounded-full border border-[#E9E4DC] bg-[#F5F2ED] px-2.5 py-1 text-[11px] font-semibold text-[#63584E]">
                         Bisa dipilih per orang
                       </span>
                       {isPopular ? (
-                        <span className="text-[#D98A45] text-xs font-bold flex items-center gap-1">
-                          <Users className="w-4 h-4" />
+                        <span className="flex items-center gap-1 text-xs font-bold text-[#A95F2A]">
+                          <Users className="h-4 w-4" />
                           Paling Diminati
                         </span>
                       ) : isLimited ? (
-                        <span className="text-[#1a0f0b] text-xs font-bold flex items-center gap-1">
-                          <Sparkles className="w-4 h-4 text-[#D98A45]" />
+                        <span className="flex items-center gap-1 text-xs font-bold text-[#30231F]">
+                          <Sparkles className="h-4 w-4 text-[#A95F2A]" />
                           Terbatas
                         </span>
                       ) : isVip ? (
-                        <span className="text-[#1a0f0b] text-xs font-bold flex items-center gap-1">
-                          <Sparkles className="w-4 h-4 text-[#D98A45]" />
+                        <span className="flex items-center gap-1 text-xs font-bold text-[#30231F]">
+                          <Sparkles className="h-4 w-4 text-[#A95F2A]" />
                           VIP Experience
                         </span>
                       ) : (
-                        <span className="text-[#635e53] text-xs flex items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4 text-[#71916B]" />
+                        <span className="flex items-center gap-1 text-xs text-[#63584E]">
+                          <CheckCircle2 className="h-4 w-4 text-[#66845E]" />
                           Tersedia
                         </span>
                       )}
                     </div>
 
-                    <h3 className="font-display text-xl sm:text-2xl font-bold text-[#1a0f0b]">
+                    <h3 className="font-display min-h-14 text-xl font-bold leading-snug text-[#30231F] sm:text-2xl">
                       {pkg.name}
                     </h3>
-                    <p className="text-xs sm:text-sm text-[#635e53] mt-1 leading-snug">
+                    <p className="mt-2 min-h-10 text-xs leading-relaxed text-[#63584E] sm:text-sm">
                       {pkg.description}
                     </p>
 
                     {/* Pricing */}
-                    <div className="my-5 pb-5 border-b border-[#E7DFD4]">
-                      <span className="text-xs text-[#635e53]">Mulai dari</span>
-                      <div className="flex items-baseline gap-1 mt-0.5">
-                        <span className="font-display text-2xl font-extrabold text-[#1a0f0b] sm:text-3xl">
+                    <div className="my-5 border-b border-[#E9E4DC] pb-5">
+                      <span className="text-xs font-medium text-[#74685C]">
+                        Mulai dari
+                      </span>
+                      <div className="mt-0.5 flex items-baseline gap-1">
+                        <span className="font-display text-2xl font-extrabold tracking-tight text-[#30231F] sm:text-3xl">
                           Rp{pkg.price.toLocaleString("id-ID")}
                         </span>
-                        <span className="text-xs text-[#635e53]">/ orang</span>
+                        <span className="text-xs text-[#74685C]">/ orang</span>
                       </div>
                     </div>
 
                     {/* Menu List */}
-                    <div className="space-y-2.5 mb-6">
-                      <p className="text-xs text-[#D98A45] uppercase tracking-wider font-bold">
+                    <div className="mb-6 space-y-3">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#A95F2A]">
                         Daftar Menu Iftar:
                       </p>
                       {pkg.features.map((feature, idx) => {
@@ -147,12 +147,12 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
                           feature.includes("Free Flow");
                         return (
                           <div key={idx} className="flex items-start gap-2.5">
-                            <Check className="w-4 h-4 text-[#71916B] shrink-0 mt-0.5 stroke-[2.5]" />
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 stroke-[2.5] text-[#66845E]" />
                             <span
-                              className={`text-xs sm:text-sm ${
+                              className={`text-xs leading-relaxed sm:text-sm ${
                                 isHighlighted
-                                  ? "text-[#D98A45] font-bold"
-                                  : "text-[#211a15]"
+                                  ? "font-semibold text-[#A95F2A]"
+                                  : "text-[#30231F]"
                               }`}
                             >
                               {feature}
@@ -166,12 +166,12 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
                   {/* Action Button */}
                   <button
                     onClick={() => onSelectPackage(pkg.id)}
-                    className={`w-full inline-flex justify-center items-center gap-2 py-3 rounded-lg font-semibold text-sm transition-all active:scale-98 cursor-pointer ${
+                    className={`mt-auto inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.98] ${
                       isPopular
-                        ? "bg-[#D98A45] hover:bg-[#C27734] text-white shadow-md"
+                        ? "bg-[#A95F2A] text-white shadow-md shadow-[#A95F2A]/20 hover:bg-[#8F4E23]"
                         : isVip || isLimited
-                          ? "bg-[#30231f] hover:bg-[#1a0f0b] text-white shadow-sm"
-                          : "bg-[#faebe2] hover:bg-[#e7dfd1] text-[#1a0f0b] border border-[#E7DFD4]"
+                          ? "bg-[#30231F] text-white shadow-sm hover:bg-[#1A0F0B]"
+                          : "border border-[#D8C5AF] bg-[#F4E6DC] text-[#30231F] hover:border-[#CFA77F] hover:bg-[#EEDBC8]"
                     }`}
                   >
                     <span>Pilih Paket & Jadwal</span>
@@ -188,10 +188,12 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
         </div>
 
         {/* Note for Special Dietary/Allergies */}
-        <div className="mt-8 p-4 rounded-xl bg-[#F8F5F0] border border-[#E7DFD4] flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-2xl border border-[#E9E4DC] bg-white p-5 sm:flex-row sm:p-6">
           <div className="flex items-center gap-3">
-            <Info className="w-6 h-6 text-[#D98A45] shrink-0" />
-            <p className="text-xs sm:text-sm text-[#635e53]">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F1ECE5]">
+              <Info className="h-5 w-5 text-[#A95F2A]" />
+            </span>
+            <p className="text-xs leading-relaxed text-[#63584E] sm:text-sm">
               Ada pantangan makanan atau request khusus untuk
               vegetarian/anak-anak? Tuliskan pada formulir reservasi atau
               hubungi WhatsApp kami.
@@ -202,7 +204,7 @@ export const PackageSection: React.FC<PackageSectionProps> = ({
               const el = document.getElementById("reservasi");
               if (el) el.scrollIntoView({ behavior: "smooth" });
             }}
-            className="shrink-0 text-[#D98A45] text-xs sm:text-sm hover:underline font-bold cursor-pointer whitespace-nowrap"
+            className="shrink-0 cursor-pointer whitespace-nowrap text-xs font-bold text-[#A95F2A] transition-colors hover:text-[#7E431E] hover:underline sm:text-sm"
           >
             Pelajari Ketentuan Reservasi →
           </button>

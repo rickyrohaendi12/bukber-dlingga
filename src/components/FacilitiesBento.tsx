@@ -5,7 +5,7 @@ import musholaImage from "../img/mushola.jpeg";
 export const FacilitiesBento: React.FC = () => {
   return (
     <section
-      className="relative overflow-hidden border-b border-[#E7DFD4] bg-[#F8F5F0] py-16 md:py-20"
+      className="relative overflow-hidden border-b border-[#E9E4DC] bg-[#F7F5F1] py-16 md:py-20"
       id="fasilitas"
     >
       <div
