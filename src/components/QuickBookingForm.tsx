@@ -1,6 +1,7 @@
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import type { MenuItem, TableItem, ReservationData } from "../types/reservation";
+import { DEFAULT_TABLE_ID } from "../data/mockData";
 import {
   CheckCircle2,
   Clock,
@@ -14,6 +15,7 @@ import {
   getTomorrowDate,
   isTableCapacitySuitable,
 } from "../data/reservations";
+import { getLargeGroupWhatsAppUrl } from "../lib/largeGroupWhatsApp";
 
 interface QuickBookingFormProps {
   packages: MenuItem[];
@@ -62,6 +64,29 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
         .sort((a, b) => a.seats - b.seats),
     [availableTables, paxCount],
   );
+  const defaultTable = availableTables.find(
+    (table) => table.id === DEFAULT_TABLE_ID,
+  );
+  const regularSuitableTables = capacitySuitableTables.filter(
+    (table) => table.id !== DEFAULT_TABLE_ID,
+  );
+  const tableOptions = useMemo(
+    () =>
+      [
+        ...(paxCount > 15
+          ? availableTables.filter((table) => table.id === DEFAULT_TABLE_ID)
+          : regularSuitableTables.length === 0 && defaultTable
+            ? [defaultTable]
+            : capacitySuitableTables),
+      ].sort((a, b) => a.seats - b.seats),
+    [
+      availableTables,
+      capacitySuitableTables,
+      defaultTable,
+      paxCount,
+      regularSuitableTables,
+    ],
+  );
 
   useEffect(() => {
     if (date < getTomorrowDate()) {
@@ -72,10 +97,10 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
   }, [date, onDateChange]);
 
   useEffect(() => {
-    if (tableId && !capacitySuitableTables.some((table) => table.id === tableId)) {
+    if (tableId && !tableOptions.some((table) => table.id === tableId)) {
       setTableId("");
     }
-  }, [capacitySuitableTables, tableId]);
+  }, [tableOptions, tableId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,11 +117,39 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
       setFormError("Mohon lengkapi semua data wajib sebelum mengirim reservasi.");
       return;
     }
-    const chosenTable = availableTables.find((table) => table.id === tableId);
-    if (
-      !chosenTable ||
-      !isTableCapacitySuitable(paxCount, chosenTable)
-    ) {
+    const chosenTable = tableOptions.find((table) => table.id === tableId);
+    if (!chosenTable) {
+      setFormError("Pilih meja atau preferensi meja terlebih dahulu.");
+      return;
+    }
+
+    if (paxCount > 15 || chosenTable.status !== "available") {
+      const selectedPackage = packages.find((item) => item.id === packageId);
+      if (!selectedPackage) {
+        setFormError("Pilih paket bukber terlebih dahulu.");
+        return;
+      }
+
+      window.location.assign(
+        getLargeGroupWhatsAppUrl({
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          date,
+          timeSlot,
+          pax: paxCount,
+          tableLabel: chosenTable.name,
+          menuLines: [`${selectedPackage.name}: ${paxCount} paket`],
+          contactReason:
+            paxCount > 15
+              ? "Jumlah tamu lebih dari 15 orang."
+              : "Meja Default saat ini penuh; mohon konfirmasi ketersediaan meja alternatif.",
+          notes,
+        }),
+      );
+      return;
+    }
+
+    if (!isTableCapacitySuitable(paxCount, chosenTable)) {
       setFormError(
         `Pilih meja tersedia dengan kapasitas yang cukup untuk ${paxCount} orang.`,
       );
@@ -281,12 +334,11 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                   <input
                     id="quick-booking-pax"
                     className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
-                    max={12}
                     min={2}
                     value={pax}
                     onChange={(e) => {
                       const value = e.target.value;
-                      setPax(value ? Math.min(12, Math.max(2, parseInt(value, 10) || 2)) : "");
+                      setPax(value ? Math.max(2, parseInt(value, 10) || 2) : "");
                       setTableId("");
                       setFormError("");
                     }}
@@ -294,15 +346,16 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                     type="number"
                   />
                   <p className="mt-1.5 text-sm text-[#4f4542]">
-                    Minimal 2, maksimal 12 orang. Untuk rombongan lebih besar,{" "}
                     <a
-                      href="https://wa.me/6282129211422?text=Halo%20Admin%20D%27Lingga%20Coffee,%20saya%20ingin%20reservasi%20untuk%20rombongan%20lebih%20dari%2012%20orang."
+                      href="https://wa.me/6282129211422?text=Halo%20Admin%20D%27Lingga%20Coffee,%20saya%20ingin%20reservasi%20untuk%20rombongan%20lebih%20dari%2015%20orang."
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-semibold text-[#187344] underline underline-offset-2 hover:text-[#125c36]"
                     >
-                      chat admin via WhatsApp.
-                    </a>
+                      Chat Admin via WhatsApp
+                    </a>{" "}
+                    jika booking lebih dari 15 orang. Pilihan meja dan menu akan
+                    disertakan agar admin dapat memastikan ketersediaannya.
                   </p>
                 </div>
                 </div>
@@ -333,26 +386,38 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                     setFormError("");
                   }}
                   required
-                  disabled={!paxCount || capacitySuitableTables.length === 0}
+                  disabled={!paxCount || tableOptions.length === 0}
                   className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#ECDFCF] disabled:text-[#635e53]"
                 >
                   <option value="" disabled>
                     {!paxCount
                       ? "Isi jumlah tamu terlebih dahulu"
-                      : capacitySuitableTables.length === 0
+                      : tableOptions.length === 0
                         ? "Tidak ada meja tersedia untuk jumlah tamu ini"
-                        : "Pilih meja yang tersedia"}
+                        : paxCount > 15
+                          ? "Pilih preferensi meja untuk dikonfirmasi admin"
+                          : tableOptions.some((table) => table.status !== "available")
+                            ? "Pilih Meja Default untuk dikonfirmasi admin"
+                          : "Pilih meja yang tersedia"}
                   </option>
-                  {capacitySuitableTables.map((t) => (
+                  {tableOptions.map((t) => (
                     <option key={t.id} value={t.id}>
                       {t.name} - {t.zoneName} ({t.seats} Kursi)
+                      {t.status !== "available"
+                        ? " · status saat ini dipesan"
+                        : ""}
+                      {paxCount > 15 || t.status !== "available"
+                        ? " · perlu konfirmasi admin"
+                        : ""}
                     </option>
                   ))}
                 </select>
                 <p className="text-sm leading-relaxed text-[#4f4542]">
-                  Hanya meja yang tersedia dan sesuai kapasitas yang ditampilkan
-                  {paxCount ? ` untuk ${paxCount} orang` : ""}
-                  . Meja ditampilkan dari kapasitas terkecil.
+                  {paxCount > 15
+                    ? "Untuk rombongan di atas 15 orang, meja default menjadi preferensi dan admin akan memastikan kapasitas serta ketersediaannya melalui WhatsApp."
+                    : tableOptions.some((table) => table.status !== "available")
+                      ? "Meja default sedang penuh; permintaan akan dikirim ke admin untuk konfirmasi meja alternatif."
+                    : `Hanya meja yang tersedia dan sesuai kapasitas yang ditampilkan${paxCount ? ` untuk ${paxCount} orang` : ""}. Meja ditampilkan dari kapasitas terkecil.`}
                 </p>
               </fieldset>
 
@@ -386,10 +451,16 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                 type="submit"
               >
                 <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
-                <span>Kirim reservasi</span>
+                <span>
+                  {paxCount > 15
+                    ? "Kirim permintaan via WhatsApp"
+                    : "Kirim reservasi"}
+                </span>
               </button>
               <p className="pt-1 text-center text-sm leading-relaxed text-[#4f4542]">
-                Konfirmasi reservasi akan diteruskan ke WhatsApp Customer Service dalam waktu kurang dari 10 menit.
+                {paxCount > 15
+                  ? "Detail meja dan menu akan dibuka di WhatsApp untuk dikonfirmasi admin."
+                  : "Konfirmasi reservasi akan diteruskan ke WhatsApp Customer Service dalam waktu kurang dari 10 menit."}
               </p>
             </form>
       </div>

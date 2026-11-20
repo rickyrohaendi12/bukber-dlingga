@@ -1,5 +1,9 @@
 import type { TableItem, MenuItem, AddonItem } from "../types/reservation";
 
+export const DEFAULT_TABLE_ID = "DEFAULT-15";
+export const DEFAULT_TABLE_CAPACITY = 15;
+export const DEFAULT_TABLE_LABEL = "Meja Default";
+
 export const INITIAL_TABLES: TableItem[] = [
   // Zona Semi-Outdoor Garden
   {
@@ -148,6 +152,17 @@ export const INITIAL_TABLES: TableItem[] = [
     minPax: 2,
     maxPax: 4,
     description: "Dekat akses kasir dan musholla lantai 2.",
+  },
+  {
+    id: DEFAULT_TABLE_ID,
+    name: DEFAULT_TABLE_LABEL,
+    zone: "indoor-lounge",
+    zoneName: "Area Rombongan (konfirmasi admin)",
+    seats: DEFAULT_TABLE_CAPACITY,
+    status: "available",
+    minPax: 13,
+    maxPax: DEFAULT_TABLE_CAPACITY,
+    description: "Meja rombongan yang perlu dikonfirmasi ketersediaannya oleh admin.",
   },
 ];
 

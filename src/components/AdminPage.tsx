@@ -23,7 +23,13 @@ import {
   ADDON_ITEMS,
   MENU_PACKAGES,
   INITIAL_TABLES,
+  DEFAULT_TABLE_ID,
+  DEFAULT_TABLE_LABEL,
 } from "../data/mockData";
+import {
+  getDefaultTableLabel,
+  updateDefaultTableLabel,
+} from "../data/bookingSettings";
 import type { ReservationData } from "../types/reservation";
 import type { Session } from "@supabase/supabase-js";
 import dlinggaLogo from "../img/dlingga.jpg";
@@ -126,6 +132,10 @@ export const AdminPage: React.FC = () => {
   const [authError, setAuthError] = useState("");
   const [reservations, setReservations] = useState<ReservationData[]>([]);
   const [loadError, setLoadError] = useState("");
+  const [defaultTableLabel, setDefaultTableLabel] = useState(DEFAULT_TABLE_LABEL);
+  const [defaultTableLabelDraft, setDefaultTableLabelDraft] = useState(DEFAULT_TABLE_LABEL);
+  const [tableSettingsError, setTableSettingsError] = useState("");
+  const [isSavingTableLabel, setIsSavingTableLabel] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<BookingFilter>("all");
   const [dailyDate, setDailyDate] = useState("");
@@ -195,6 +205,33 @@ export const AdminPage: React.FC = () => {
     };
   }, [isAdmin]);
 
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let isCurrent = true;
+    getDefaultTableLabel()
+      .then((label) => {
+        if (isCurrent) {
+          setDefaultTableLabel(label);
+          setDefaultTableLabelDraft(label);
+          setTableSettingsError("");
+        }
+      })
+      .catch((error: unknown) => {
+        if (isCurrent) {
+          setTableSettingsError(
+            error instanceof Error
+              ? error.message
+              : "Gagal memuat pengaturan meja default.",
+          );
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [isAdmin]);
+
   const signIn = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsSigningIn(true);
@@ -239,6 +276,25 @@ export const AdminPage: React.FC = () => {
       setLoadError(error instanceof Error ? error.message : "Gagal memuat reservasi.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const saveDefaultTableLabel = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsSavingTableLabel(true);
+    setTableSettingsError("");
+    try {
+      const savedLabel = await updateDefaultTableLabel(defaultTableLabelDraft);
+      setDefaultTableLabel(savedLabel);
+      setDefaultTableLabelDraft(savedLabel);
+    } catch (error) {
+      setTableSettingsError(
+        error instanceof Error
+          ? error.message
+          : "Gagal menyimpan nama meja default.",
+      );
+    } finally {
+      setIsSavingTableLabel(false);
     }
   };
 
@@ -565,6 +621,51 @@ export const AdminPage: React.FC = () => {
           </div>
         )}
 
+        <form
+          onSubmit={saveDefaultTableLabel}
+          className="mb-6 rounded-2xl border border-[#E7DFD4] bg-white p-4 shadow-sm sm:p-5"
+        >
+          <label
+            htmlFor="default-table-label"
+            className="block text-sm font-bold text-[#1a0f0b]"
+          >
+            Nama meja default (kapasitas 13–15 orang)
+          </label>
+          <p className="mt-1 text-xs leading-relaxed text-[#635e53]">
+            Nama ini tampil sebagai pilihan meja rombongan di formulir reservasi.
+          </p>
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+            <input
+              id="default-table-label"
+              type="text"
+              value={defaultTableLabelDraft}
+              onChange={(event) => {
+                setDefaultTableLabelDraft(event.target.value);
+                setTableSettingsError("");
+              }}
+              maxLength={80}
+              minLength={2}
+              required
+              className="min-h-11 flex-1 rounded-xl border border-[#cfc4b7] px-3.5 py-2.5 text-sm text-[#211a15] outline-none focus:border-[#D98A45] focus:ring-2 focus:ring-[#D98A45]/20"
+            />
+            <button
+              type="submit"
+              disabled={
+                isSavingTableLabel ||
+                defaultTableLabelDraft.trim() === defaultTableLabel
+              }
+              className="min-h-11 rounded-xl bg-[#9a5929] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#78451f] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSavingTableLabel ? "Menyimpan..." : "Simpan nama meja"}
+            </button>
+          </div>
+          {tableSettingsError && (
+            <p role="alert" className="mt-3 rounded-xl bg-[#FBEEEE] p-3 text-sm text-[#A8544E]">
+              Gagal memuat atau menyimpan pengaturan meja: {tableSettingsError}
+            </p>
+          )}
+        </form>
+
         <section className="mb-6 flex flex-wrap items-end gap-3 rounded-2xl border border-[#E7DFD4] bg-white p-4 shadow-sm sm:p-5" aria-label="Filter tanggal booking">
           <label className="flex min-w-[220px] flex-1 flex-col gap-1.5 text-xs font-semibold text-[#635e53]">
             Tampilkan pesanan tanggal
@@ -859,7 +960,9 @@ export const AdminPage: React.FC = () => {
                     icon={Armchair}
                     label="Meja"
                     value={
-                      selectedTable?.name ?? `Meja ${selectedBooking.tableId}`
+                      selectedTable?.id === DEFAULT_TABLE_ID
+                        ? defaultTableLabel
+                        : selectedTable?.name ?? `Meja ${selectedBooking.tableId}`
                     }
                   />
                   <InfoItem

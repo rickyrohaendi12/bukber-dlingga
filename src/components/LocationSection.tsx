@@ -43,13 +43,13 @@ export const LocationSection: React.FC = () => (
       </div>
       <div className="mt-4 rounded-xl border border-[#E7DFD4] bg-[#ECDFCF] p-4">
         <p className="text-sm font-semibold text-[#1a0f0b]">
-          Rombongan lebih dari 12 orang?
+          Rombongan lebih dari 15 orang?
         </p>
         <p className="mt-1 text-sm leading-relaxed text-[#635e53]">
           Hubungi admin untuk membantu mengatur reservasi rombongan.
         </p>
         <a
-          href="https://wa.me/6282129211422?text=Halo%20Admin%20D%27Lingga%20Coffee,%20saya%20ingin%20reservasi%20untuk%20rombongan%20lebih%20dari%2012%20orang."
+          href="https://wa.me/6282129211422?text=Halo%20Admin%20D%27Lingga%20Coffee,%20saya%20ingin%20reservasi%20untuk%20rombongan%20lebih%20dari%2015%20orang."
           target="_blank"
           rel="noopener noreferrer"
           className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1f8f55] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#187344] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#187344]"

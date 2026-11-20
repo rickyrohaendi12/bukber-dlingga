@@ -6,7 +6,9 @@ import type {
   AddonItem,
   ReservationData,
 } from "../types/reservation";
+import { DEFAULT_TABLE_ID } from "../data/mockData";
 import { getTomorrowDate, isTableCapacitySuitable } from "../data/reservations";
+import { getLargeGroupWhatsAppUrl } from "../lib/largeGroupWhatsApp";
 import {
   Check,
   CheckCircle,
@@ -96,21 +98,32 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
         .sort((a, b) => a.seats - b.seats),
     [pax, tables],
   );
+  const defaultTable = tables.find((table) => table.id === DEFAULT_TABLE_ID);
+  const regularSuitableTables = capacitySuitableTables.filter(
+    (table) => table.id !== DEFAULT_TABLE_ID,
+  );
+  const tableOptions = useMemo(
+    () =>
+      [
+        ...(pax > 15
+          ? tables.filter((table) => table.id === DEFAULT_TABLE_ID)
+          : regularSuitableTables.length === 0 && defaultTable
+            ? [defaultTable]
+            : capacitySuitableTables),
+      ].sort((a, b) => a.seats - b.seats),
+    [capacitySuitableTables, defaultTable, pax, regularSuitableTables, tables],
+  );
   const selectedTable = tables.find((table) => table.id === selectedTableId);
 
   useEffect(() => {
-    if (!capacitySuitableTables.some((table) => table.id === selectedTableId)) {
+    if (!tableOptions.some((table) => table.id === selectedTableId)) {
       setSelectedTableId("");
     }
-  }, [capacitySuitableTables, selectedTableId]);
+  }, [tableOptions, selectedTableId]);
 
   const handlePaxChange = (nextPax: number) => {
-    const adjustedPax = Math.min(12, Math.max(2, nextPax));
+    const adjustedPax = Math.max(2, nextPax);
     setPax(adjustedPax);
-    const selectedTable = tables.find((table) => table.id === selectedTableId);
-    if (selectedTable && selectedTable.seats < adjustedPax) {
-      setSelectedTableId("");
-    }
   };
 
   // Calculations
@@ -172,16 +185,54 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       setFormError("Pilih waktu kedatangan terlebih dahulu.");
       return;
     }
-    const chosenTable = tables.find((table) => table.id === selectedTableId);
-    if (!chosenTable || !isTableCapacitySuitable(pax, chosenTable)) {
+    const chosenTable = tableOptions.find((table) => table.id === selectedTableId);
+    if (!chosenTable) {
+      setFormError("Pilih meja atau preferensi meja sebelum melanjutkan.");
+      return;
+    }
+    if (selectedPackageCount < (pax > 15 ? 1 : pax)) {
       setFormError(
-        `Pilih meja yang sesuai untuk ${pax} orang sebelum melanjutkan.`,
+        pax > 15
+          ? "Pilih minimal satu paket menu untuk dikirim ke admin."
+          : `Jumlah paket minimal harus sama dengan jumlah tamu. Saat ini ${selectedPackageCount} dari minimal ${pax} paket sudah dipilih.`,
       );
       return;
     }
-    if (selectedPackageCount < pax) {
+
+    if (pax > 15 || chosenTable.status !== "available") {
+      const menuLines = [
+        ...Object.entries(packageSelections).map(([id, quantity]) => {
+          const item = packages.find((menuPackage) => menuPackage.id === id);
+          return `${item?.name ?? id}: ${quantity} paket`;
+        }),
+        ...Object.entries(selectedAddons).map(([id, quantity]) => {
+          const item = addons.find((addon) => addon.id === id);
+          return `${item?.name ?? id}: ${quantity}`;
+        }),
+      ];
+
+      window.location.assign(
+        getLargeGroupWhatsAppUrl({
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          date,
+          timeSlot,
+          pax,
+          tableLabel: chosenTable.name,
+          menuLines,
+          contactReason:
+            pax > 15
+              ? "Jumlah tamu lebih dari 15 orang."
+              : "Meja Default saat ini penuh; mohon konfirmasi ketersediaan meja alternatif.",
+          notes,
+        }),
+      );
+      return;
+    }
+
+    if (!isTableCapacitySuitable(pax, chosenTable)) {
       setFormError(
-        `Jumlah paket minimal harus sama dengan jumlah tamu. Saat ini ${selectedPackageCount} dari minimal ${pax} paket sudah dipilih.`,
+        `Pilih meja yang sesuai untuk ${pax} orang sebelum melanjutkan.`,
       );
       return;
     }
@@ -357,7 +408,6 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     <button
                       type="button"
                       aria-label="Tambah jumlah tamu"
-                      disabled={pax >= 12}
                       onClick={() => handlePaxChange(pax + 1)}
                       className="h-12 w-12 bg-[#ECDFCF] text-xl font-bold text-[#1a0f0b] hover:bg-[#e7dfd1] focus-visible:outline-2 focus-visible:outline-[#9a5929] disabled:cursor-not-allowed disabled:opacity-40"
                     >
@@ -365,17 +415,11 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     </button>
                   </div>
                 </div>
-                {pax >= 12 && (
+                {pax > 15 && (
                   <p className="basis-full text-sm leading-relaxed text-[#4f4542]">
-                    Reservasi online maksimal 12 orang.{" "}
-                    <a
-                      href="https://wa.me/6282129211422?text=Halo%20Admin%20D%27Lingga%20Coffee,%20saya%20ingin%20reservasi%20untuk%20rombongan%20lebih%20dari%2012%20orang."
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold text-[#187344] underline underline-offset-2 hover:text-[#125c36]"
-                    >
-                      Hubungi admin untuk rombongan lebih besar.
-                    </a>
+                    Untuk rombongan di atas 15 orang, isi pilihan meja dan menu
+                    lalu kirim permintaan melalui WhatsApp agar admin dapat
+                    memastikan ketersediaan meja.
                   </p>
                 )}
               </div>
@@ -423,8 +467,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   2. Pilih meja
                 </h3>
                 <p className="mt-1 text-sm leading-relaxed text-[#4f4542]">
-                  Pilih meja tersedia dengan kapasitas yang cukup untuk {pax}{" "}
-                  orang. Meja diurutkan dari kapasitas terkecil.
+                  {pax > 15
+                    ? "Pilih preferensi meja untuk dikonfirmasi admin."
+                    : `Pilih meja tersedia dengan kapasitas yang cukup untuk ${pax} orang. Meja diurutkan dari kapasitas terkecil.`}
                 </p>
               </div>
 
@@ -442,27 +487,42 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   setFormError("");
                 }}
                 required
-                disabled={capacitySuitableTables.length === 0}
+                disabled={tableOptions.length === 0}
                 className="min-h-12 w-full cursor-pointer rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25 disabled:cursor-not-allowed disabled:bg-[#ECDFCF] disabled:text-[#635e53]"
               >
                 <option value="" disabled>
-                  {capacitySuitableTables.length === 0
+                  {tableOptions.length === 0
                     ? `Tidak ada meja tersedia untuk ${pax} orang`
-                    : "Pilih meja yang tersedia"}
+                    : pax > 15
+                      ? "Pilih preferensi meja untuk dikonfirmasi admin"
+                      : tableOptions.some((table) => table.status !== "available")
+                        ? "Pilih Meja Default untuk dikonfirmasi admin"
+                      : "Pilih meja yang tersedia"}
                 </option>
-                {capacitySuitableTables.map((table) => (
+                {tableOptions.map((table) => (
                   <option key={table.id} value={table.id}>
                     {table.name} - {table.zoneName} ({table.seats} kursi)
+                    {table.status !== "available"
+                      ? " · status saat ini dipesan"
+                      : ""}
+                    {pax > 15 || table.status !== "available"
+                      ? " · perlu konfirmasi admin"
+                      : ""}
                   </option>
                 ))}
               </select>
               <p className="mt-2 text-sm leading-relaxed text-[#4f4542]">
-                Pilihan menampilkan semua meja yang tersedia dan cukup untuk
-                jumlah tamu.
+                {pax > 15
+                  ? "Meja default menjadi preferensi untuk rombongan di atas 15 orang; admin akan mengonfirmasi kapasitas dan ketersediaannya melalui WhatsApp."
+                  : tableOptions.some((table) => table.status !== "available")
+                    ? "Meja default sedang penuh; permintaan akan dikirim ke admin untuk konfirmasi meja alternatif."
+                  : "Pilihan menampilkan semua meja yang tersedia dan cukup untuk jumlah tamu."}
               </p>
-              {capacitySuitableTables.length === 0 && (
+              {tableOptions.length === 0 && (
                 <p className="mt-3 rounded-lg bg-[#FBEEEE] p-3 text-xs text-[#A8544E]">
-                  Tidak tersedia meja yang cukup untuk {pax} orang.
+                  {pax > 15
+                    ? "Tidak ada meja yang tersedia untuk dipilih sebagai preferensi."
+                    : `Tidak tersedia meja yang cukup untuk ${pax} orang.`}
                 </p>
               )}
 
@@ -905,7 +965,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   <span>
                     {isSubmitting
                       ? "Mengirim pengajuan..."
-                      : "Ajukan Reservasi"}
+                      : pax > 15
+                        ? "Kirim permintaan via WhatsApp"
+                        : "Ajukan Reservasi"}
                   </span>
                 </button>
                 <p className="text-center text-sm leading-relaxed text-[#4f4542]">

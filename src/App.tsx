@@ -12,7 +12,10 @@ import {
   INITIAL_TABLES,
   MENU_PACKAGES,
   ADDON_ITEMS,
+  DEFAULT_TABLE_ID,
+  DEFAULT_TABLE_LABEL,
 } from './data/mockData';
+import { getDefaultTableLabel } from './data/bookingSettings';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { PackageSection } from './components/PackageSection';
@@ -94,18 +97,45 @@ function PublicApp() {
 
   const [bookingDate, setBookingDate] = useState(getTomorrowDate);
   const [bookedTableIds, setBookedTableIds] = useState<string[]>([]);
+  const [defaultTableLabel, setDefaultTableLabel] = useState(DEFAULT_TABLE_LABEL);
+  const [settingsError, setSettingsError] = useState('');
   const [activeReservation, setActiveReservation] = useState<ReservationData | null>(null);
   const [backendError, setBackendError] = useState('');
   const tables = useMemo(
     () =>
       INITIAL_TABLES.map((table) => ({
         ...table,
+        name: table.id === DEFAULT_TABLE_ID ? defaultTableLabel : table.name,
         status: bookedTableIds.includes(table.id)
           ? 'reserved' as const
           : 'available' as const,
       })),
-    [bookedTableIds],
+    [bookedTableIds, defaultTableLabel],
   );
+
+  useEffect(() => {
+    let isCurrent = true;
+    getDefaultTableLabel()
+      .then((label) => {
+        if (isCurrent) {
+          setDefaultTableLabel(label);
+          setSettingsError('');
+        }
+      })
+      .catch((error: unknown) => {
+        if (isCurrent) {
+          setSettingsError(
+            error instanceof Error
+              ? error.message
+              : 'Gagal memuat pengaturan meja default.',
+          );
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   // Preselection for wizard
   const [preselectedPackageId, setPreselectedPackageId] = useState<string>('');
@@ -272,6 +302,11 @@ function PublicApp() {
       {backendError && (
         <div role="alert" className="bg-[#FBEEEE] px-4 py-3 text-center text-sm text-[#A8544E]">
           Backend reservasi belum siap: {backendError}
+        </div>
+      )}
+      {settingsError && (
+        <div role="alert" className="bg-[#FBEEEE] px-4 py-3 text-center text-sm text-[#A8544E]">
+          Pengaturan meja default belum dapat dimuat: {settingsError}
         </div>
       )}
       {/* Top Navigation */}
