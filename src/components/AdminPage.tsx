@@ -24,6 +24,8 @@ import {
   MENU_PACKAGES,
   INITIAL_TABLES,
   DEFAULT_TABLE_ID,
+  DEFAULT_TABLE_CAPACITY,
+  DEFAULT_TABLE_MAX_PAX,
   DEFAULT_TABLE_LABEL,
 } from "../data/mockData";
 import {
@@ -420,10 +422,11 @@ export const AdminPage: React.FC = () => {
     if (!booking || booking.status !== "pending") return;
 
     const table = INITIAL_TABLES.find((item) => item.id === booking.tableId);
-    if (
-      !table ||
-      !isTableCapacitySuitable(booking.pax, table)
-    ) {
+    const isGroupTable = booking.tableId === DEFAULT_TABLE_ID;
+    const canApproveCapacity = isGroupTable
+      ? booking.pax >= 2 && booking.pax <= DEFAULT_TABLE_MAX_PAX
+      : table && isTableCapacitySuitable(booking.pax, table);
+    if (!table || !canApproveCapacity) {
       window.alert(
         `Booking tidak dapat disetujui: kapasitas meja ${booking.tableId} tidak cukup untuk ${booking.pax} orang.`,
       );
@@ -971,6 +974,15 @@ export const AdminPage: React.FC = () => {
                     value={selectedTable?.zoneName ?? "Belum tersedia"}
                   />
                 </div>
+                {selectedBooking.status === "pending" &&
+                  selectedBooking.tableId === DEFAULT_TABLE_ID &&
+                  selectedBooking.pax > DEFAULT_TABLE_CAPACITY && (
+                    <p className="rounded-xl border border-[#E7DFD4] bg-[#FFF4E7] p-3 text-sm leading-relaxed text-[#8b531d]">
+                      Rombongan ini melebihi kapasitas meja standar. Pastikan
+                      kapasitas dan pengaturan meja sudah dikonfirmasi sebelum
+                      menyetujui booking.
+                    </p>
+                  )}
 
                 <div className="border-t border-[#F0EAE4] pt-5">
                   <div className="mb-3 flex items-center justify-between">
@@ -1096,7 +1108,10 @@ export const AdminPage: React.FC = () => {
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#52724D] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#415e3c] focus:outline-none focus:ring-4 focus:ring-[#52724D]/20"
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    Setujui booking & minta DP 50%
+                    {selectedBooking.tableId === DEFAULT_TABLE_ID &&
+                    selectedBooking.pax > DEFAULT_TABLE_CAPACITY
+                      ? "Konfirmasi kapasitas & setujui booking"
+                      : "Setujui booking & minta DP 50%"}
                   </button>
                 ) : (
                   <div className="space-y-2">
