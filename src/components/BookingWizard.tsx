@@ -122,7 +122,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
   }, [tableOptions, selectedTableId]);
 
   const handlePaxChange = (nextPax: number) => {
-    const adjustedPax = Math.max(2, nextPax);
+    const adjustedPax = Math.min(30, Math.max(2, nextPax));
     setPax(adjustedPax);
   };
 
@@ -190,16 +190,14 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       setFormError("Pilih meja atau preferensi meja sebelum melanjutkan.");
       return;
     }
-    if (selectedPackageCount < (pax > 15 ? 1 : pax)) {
+    if (selectedPackageCount < pax) {
       setFormError(
-        pax > 15
-          ? "Pilih minimal satu paket menu untuk dikirim ke admin."
-          : `Jumlah paket minimal harus sama dengan jumlah tamu. Saat ini ${selectedPackageCount} dari minimal ${pax} paket sudah dipilih.`,
+        `Jumlah paket minimal harus sama dengan jumlah tamu. Saat ini ${selectedPackageCount} dari minimal ${pax} paket sudah dipilih.`,
       );
       return;
     }
 
-    if (pax > 15 || chosenTable.status !== "available") {
+    if (chosenTable.status !== "available") {
       const menuLines = [
         ...Object.entries(packageSelections).map(([id, quantity]) => {
           const item = packages.find((menuPackage) => menuPackage.id === id);
@@ -221,9 +219,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
           tableLabel: chosenTable.name,
           menuLines,
           contactReason:
-            pax > 15
-              ? "Jumlah tamu lebih dari 15 orang."
-              : "Meja Default saat ini penuh; mohon konfirmasi ketersediaan meja alternatif.",
+            "Meja yang dipilih sedang dipesan; mohon konfirmasi ketersediaan meja alternatif.",
           notes,
         }),
       );
@@ -417,9 +413,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 </div>
                 {pax > 15 && (
                   <p className="basis-full text-sm leading-relaxed text-[#4f4542]">
-                    Untuk rombongan di atas 15 orang, isi pilihan meja dan menu
-                    lalu kirim permintaan melalui WhatsApp agar admin dapat
-                    memastikan ketersediaan meja.
+                    Untuk rombongan di atas 15 orang, permintaan akan
+                    tersimpan dan menunggu konfirmasi kapasitas dari admin.
                   </p>
                 )}
               </div>
@@ -513,7 +508,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
               </select>
               <p className="mt-2 text-sm leading-relaxed text-[#4f4542]">
                 {pax > 15
-                  ? "Meja default menjadi preferensi untuk rombongan di atas 15 orang; admin akan mengonfirmasi kapasitas dan ketersediaannya melalui WhatsApp."
+                  ? "Meja default menjadi preferensi untuk rombongan di atas 15 orang; booking akan tersimpan untuk dikonfirmasi admin."
                   : tableOptions.some((table) => table.status !== "available")
                     ? "Meja default sedang penuh; permintaan akan dikirim ke admin untuk konfirmasi meja alternatif."
                   : "Pilihan menampilkan semua meja yang tersedia dan cukup untuk jumlah tamu."}
@@ -965,14 +960,12 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   <span>
                     {isSubmitting
                       ? "Mengirim pengajuan..."
-                      : pax > 15
-                        ? "Kirim permintaan via WhatsApp"
-                        : "Ajukan Reservasi"}
+                      : "Ajukan Reservasi"}
                   </span>
                 </button>
                 <p className="text-center text-sm leading-relaxed text-[#4f4542]">
-                  WhatsApp akan terbuka dengan detail booking Anda. Tekan Kirim
-                  di WhatsApp agar admin menerima pengajuan.
+                  Booking akan tersimpan dan tampil di halaman admin untuk
+                  dikonfirmasi. Anda akan menerima tiket setelah pengajuan.
                 </p>
 
                 <button

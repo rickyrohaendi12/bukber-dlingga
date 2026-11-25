@@ -2,6 +2,7 @@ import type { TableItem, MenuItem, AddonItem } from "../types/reservation";
 
 export const DEFAULT_TABLE_ID = "DEFAULT-15";
 export const DEFAULT_TABLE_CAPACITY = 15;
+export const DEFAULT_TABLE_MAX_PAX = 30;
 export const DEFAULT_TABLE_LABEL = "Meja Default";
 
 export const INITIAL_TABLES: TableItem[] = [
@@ -161,8 +162,8 @@ export const INITIAL_TABLES: TableItem[] = [
     seats: DEFAULT_TABLE_CAPACITY,
     status: "available",
     minPax: 13,
-    maxPax: DEFAULT_TABLE_CAPACITY,
-    description: "Meja rombongan yang perlu dikonfirmasi ketersediaannya oleh admin.",
+    maxPax: DEFAULT_TABLE_MAX_PAX,
+    description: "Preferensi meja untuk rombongan; kapasitas perlu dikonfirmasi admin.",
   },
 ];
 

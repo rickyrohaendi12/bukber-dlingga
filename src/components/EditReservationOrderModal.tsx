@@ -31,7 +31,7 @@ const getEditErrorMessage = (error: unknown) => {
     return "Tiket tidak ditemukan. Cari kembali tiket menggunakan Booking ID dan nomor WhatsApp yang benar.";
   }
   if (message.includes("INVALID_GUEST_COUNT")) {
-    return "Jumlah tamu harus antara 2 hingga 15 orang.";
+    return "Jumlah tamu harus antara 2 hingga 30 orang.";
   }
   if (message.includes("PACKAGE_SELECTIONS_MUST_AT_LEAST_MATCH_GUEST_COUNT")) {
     return "Jumlah paket minimal harus sama dengan jumlah tamu.";
@@ -103,8 +103,8 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError("");
-    if (pax < 2 || pax > 15) {
-      setFormError("Jumlah tamu harus antara 2 hingga 15 orang.");
+    if (pax < 2 || pax > 30) {
+      setFormError("Jumlah tamu harus antara 2 hingga 30 orang.");
       return;
     }
     if (packageCount < pax) {
@@ -182,11 +182,11 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
                 label="Jumlah tamu"
                 quantity={pax}
                 min={2}
-                max={15}
+                max={30}
                 canDecrease={pax > 2}
-                canIncrease={pax < 15}
+                canIncrease={pax < 30}
                 onChange={(quantity) =>
-                  setPax(Math.min(15, Math.max(2, quantity)))
+                  setPax(Math.min(30, Math.max(2, quantity)))
                 }
               />
             </div>
@@ -224,7 +224,7 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
             </div>
             <p className="mt-3 text-xs leading-relaxed text-[#635e53]">
               Minimal pesan satu paket per tamu. Jumlah paket boleh melebihi
-              jumlah tamu; jumlah tamu maksimal 15 orang.
+              jumlah tamu; jumlah tamu maksimal 30 orang.
             </p>
           </div>
 
@@ -302,7 +302,7 @@ export const EditReservationOrderModal: React.FC<EditReservationOrderModalProps>
             </button>
             <button
               type="submit"
-              disabled={isSaving || pax < 2 || pax > 15}
+              disabled={isSaving || pax < 2 || pax > 30}
               className="min-h-11 rounded-xl bg-[#9a5929] px-5 text-sm font-bold text-white transition hover:bg-[#78451f] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSaving ? "Menyimpan..." : "Simpan perubahan"}

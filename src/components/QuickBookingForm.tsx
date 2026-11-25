@@ -123,7 +123,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
       return;
     }
 
-    if (paxCount > 15 || chosenTable.status !== "available") {
+    if (chosenTable.status !== "available") {
       const selectedPackage = packages.find((item) => item.id === packageId);
       if (!selectedPackage) {
         setFormError("Pilih paket bukber terlebih dahulu.");
@@ -140,9 +140,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
           tableLabel: chosenTable.name,
           menuLines: [`${selectedPackage.name}: ${paxCount} paket`],
           contactReason:
-            paxCount > 15
-              ? "Jumlah tamu lebih dari 15 orang."
-              : "Meja Default saat ini penuh; mohon konfirmasi ketersediaan meja alternatif.",
+            "Meja yang dipilih sedang dipesan; mohon konfirmasi ketersediaan meja alternatif.",
           notes,
         }),
       );
@@ -335,6 +333,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                     id="quick-booking-pax"
                     className="min-h-12 w-full rounded-xl border border-[#cfc4b7] bg-white px-4 py-3 text-base text-[#1a0f0b] outline-none transition focus:border-[#9a5929] focus:ring-2 focus:ring-[#9a5929]/25"
                     min={2}
+                    max={30}
                     value={pax}
                     onChange={(e) => {
                       const value = e.target.value;
@@ -354,8 +353,9 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                     >
                       Chat Admin via WhatsApp
                     </a>{" "}
-                    jika booking lebih dari 15 orang. Pilihan meja dan menu akan
-                    disertakan agar admin dapat memastikan ketersediaannya.
+                    jika ingin menghubungi admin langsung. Booking rombongan
+                    lebih dari 15 orang akan tersimpan dan menunggu konfirmasi
+                    kapasitas dari admin.
                   </p>
                 </div>
                 </div>
@@ -414,7 +414,7 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                 </select>
                 <p className="text-sm leading-relaxed text-[#4f4542]">
                   {paxCount > 15
-                    ? "Untuk rombongan di atas 15 orang, meja default menjadi preferensi dan admin akan memastikan kapasitas serta ketersediaannya melalui WhatsApp."
+                    ? "Meja default menjadi preferensi untuk rombongan di atas 15 orang. Booking akan tersimpan dan menunggu konfirmasi kapasitas dari admin."
                     : tableOptions.some((table) => table.status !== "available")
                       ? "Meja default sedang penuh; permintaan akan dikirim ke admin untuk konfirmasi meja alternatif."
                     : `Hanya meja yang tersedia dan sesuai kapasitas yang ditampilkan${paxCount ? ` untuk ${paxCount} orang` : ""}. Meja ditampilkan dari kapasitas terkecil.`}
@@ -451,15 +451,11 @@ export const QuickBookingForm: React.FC<QuickBookingFormProps> = ({
                 type="submit"
               >
                 <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
-                <span>
-                  {paxCount > 15
-                    ? "Kirim permintaan via WhatsApp"
-                    : "Kirim reservasi"}
-                </span>
+                <span>Kirim reservasi</span>
               </button>
               <p className="pt-1 text-center text-sm leading-relaxed text-[#4f4542]">
                 {paxCount > 15
-                  ? "Detail meja dan menu akan dibuka di WhatsApp untuk dikonfirmasi admin."
+                  ? "Booking rombongan akan masuk ke halaman admin untuk dikonfirmasi."
                   : "Konfirmasi reservasi akan diteruskan ke WhatsApp Customer Service dalam waktu kurang dari 10 menit."}
               </p>
             </form>

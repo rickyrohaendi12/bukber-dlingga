@@ -629,7 +629,7 @@ export const AdminPage: React.FC = () => {
             htmlFor="default-table-label"
             className="block text-sm font-bold text-[#1a0f0b]"
           >
-            Nama meja default (kapasitas 13–15 orang)
+            Nama meja default (rombongan 13–30 orang; perlu konfirmasi)
           </label>
           <p className="mt-1 text-xs leading-relaxed text-[#635e53]">
             Nama ini tampil sebagai pilihan meja rombongan di formulir reservasi.

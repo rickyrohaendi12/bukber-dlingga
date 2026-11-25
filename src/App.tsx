@@ -30,8 +30,8 @@ import { Footer } from './components/Footer';
 import { motion, useReducedMotion } from 'motion/react';
 import { Armchair, MapPin } from 'lucide-react';
 import { AdminPage } from './components/AdminPage';
-import floorPlanFloor1Image from './img/denah lt 1.jpeg';
-import floorPlanFloor2Image from './img/denah lt 2.png';
+import floorPlanFloor1Image from './img/lt 1.jpeg';
+import floorPlanFloor2Image from './img/lt 2.jpeg';
 import {
   getBookedTableIds,
   createReservation,

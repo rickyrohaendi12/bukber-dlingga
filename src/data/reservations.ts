@@ -164,4 +164,4 @@ export const updateReservationStatus = async (
 };
 
 export const isTableCapacitySuitable = (pax: number, table: TableItem) =>
-  table.seats >= pax;
+  pax <= (table.maxPax ?? table.seats);
